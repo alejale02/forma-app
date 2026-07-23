@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>Forma — Entrenamiento periodizado</title>
+<meta name="theme-color" content="#12141A" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Forma" />
+<link id="manifest-link" rel="manifest" href="data:application/manifest+json,">
+<link rel="apple-touch-icon" id="apple-touch-icon">
+<link rel="icon" id="favicon">
+<style>
+:root{
+  --bg:#12141A; --bg-elev:#1B1E27; --bg-elev2:#242835;
+  --accent:#C8FF3D; --accent-dim:#8FBF2B;
+  --text:#F4F6F8; --text-dim:#9AA0AC; --text-faint:#5C616E;
+  --danger:#FF6B4A; --up:#7DD8FF;
+  --radius:20px; --radius-sm:12px;
+  --font-display:'Archivo Black','Arial Black',sans-serif;
+  --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--font-body);height:100%;overscroll-behavior:none;}
+body{-webkit-user-select:none;user-select:none;}
+input{user-select:text;-webkit-user-select:text;}
+#root{min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;}
+button{font-family:inherit; border:none; cursor:pointer; -webkit-appearance:none;}
+h1,h2{font-family:var(--font-display); font-weight:900; letter-spacing:-0.02em; margin:0;}
+p{margin:0;}
+
+.app-shell{flex:1; display:flex; flex-direction:column; max-width:520px; margin:0 auto; width:100%; position:relative;}
+.screen{flex:1; display:flex; flex-direction:column; padding:24px 20px calc(24px + env(safe-area-inset-bottom)); padding-top:calc(24px + env(safe-area-inset-top)); animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+.eyebrow{font-size:12px; text-transform:uppercase; letter-spacing:0.12em; color:var(--accent); font-weight:700; margin-bottom:6px;}
+
+/* ---- HOME ---- */
+.home-header{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;}
+.home-header h1{font-size:34px;}
+.icon-btn{background:var(--bg-elev); color:var(--text); width:44px; height:44px; border-radius:12px; font-size:18px; display:flex; align-items:center; justify-content:center;}
+
+.phase-card{background:var(--bg-elev); border-radius:var(--radius); padding:22px; margin-bottom:16px; border-left:4px solid var(--phase-color);}
+.phase-name{font-family:var(--font-display); font-size:24px; color:var(--phase-color); margin-bottom:6px;}
+.phase-desc{color:var(--text-dim); font-size:14px; line-height:1.5; margin-bottom:16px;}
+.phase-progress{display:flex; gap:6px; margin-bottom:8px;}
+.dot{width:100%; height:6px; border-radius:3px; background:var(--bg-elev2);}
+.dot.filled{background:var(--phase-color);}
+.phase-progress-label{font-size:12px; color:var(--text-faint);}
+
+.cycle-track{display:flex; gap:8px; margin-bottom:24px;}
+.cycle-step{flex:1; text-align:center; padding:10px 4px; border-radius:var(--radius-sm); background:var(--bg-elev); opacity:0.45;}
+.cycle-step.active{opacity:1; background:var(--bg-elev2); outline:1.5px solid var(--accent);}
+.cycle-step.done{opacity:0.7;}
+.cycle-num{display:block; font-family:var(--font-display); font-size:16px;}
+.cycle-label{display:block; font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.04em; margin-top:2px;}
+
+.btn-primary{background:var(--accent); color:#0C0D10; font-weight:800; border-radius:var(--radius-sm); padding:16px; font-size:16px;}
+.btn-primary:disabled{opacity:0.35;}
+.btn-huge{width:100%; padding:20px; font-size:17px; border-radius:16px; margin:8px 0;}
+.btn-secondary{background:var(--bg-elev2); color:var(--text); border-radius:var(--radius-sm); padding:16px; font-size:15px; font-weight:600;}
+.btn-danger{background:transparent; color:var(--danger); border:1.5px solid var(--danger); border-radius:var(--radius-sm); padding:14px 20px; font-weight:700; width:100%;}
+
+.stat-row{display:flex; gap:10px; margin:16px 0;}
+.stat-box{flex:1; background:var(--bg-elev); border-radius:var(--radius-sm); padding:16px; text-align:center;}
+.stat-num{font-family:var(--font-display); font-size:26px; color:var(--accent);}
+.stat-label{font-size:11px; color:var(--text-dim); margin-top:2px;}
+
+.link-btn{background:none; color:var(--text-dim); text-align:center; padding:10px; font-size:14px; text-decoration:underline; text-underline-offset:3px;}
+
+/* ---- MOBILITY / WORK / REST shared ---- */
+.mobility,.work,.rest,.logging{align-items:center; text-align:center; justify-content:center;}
+.mobility-ring{position:relative; width:180px; height:180px; margin:20px 0;}
+.ring-svg{width:100%; height:100%; transform:rotate(-90deg);}
+.ring-bg{fill:none; stroke:var(--bg-elev2); stroke-width:8;}
+.ring-fg{fill:none; stroke:var(--accent); stroke-width:8; stroke-linecap:round; stroke-dasharray:339.3; transition:stroke-dashoffset 1s linear;}
+.ring-center{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--accent);}
+.glyph-wrap{display:flex; align-items:center; justify-content:center; color:var(--accent);}
+.glyph-wrap svg{width:100%; height:100%;}
+
+h2{font-size:24px; margin:8px 0;}
+.cue-text{color:var(--text-dim); font-size:15px; line-height:1.5; max-width:340px; margin:0 auto 12px;}
+.timer-big{font-family:var(--font-display); font-size:56px; margin:16px 0; letter-spacing:-0.02em;}
+.rest-timer{color:var(--up);}
+.rest-next{color:var(--text-dim); font-size:14px; margin-bottom:24px;}
+
+.mobility-controls{display:flex; gap:10px; width:100%; margin-top:16px;}
+.mobility-controls .btn-secondary,.mobility-controls .btn-primary{flex:1; margin:0;}
+.mobility-dots{display:flex; gap:8px; margin-top:28px;}
+.mdot{width:8px; height:8px; border-radius:50%; background:var(--bg-elev2);}
+.mdot.active{background:var(--accent); width:22px; border-radius:4px;}
+.mdot.done{background:var(--accent-dim);}
+
+.exercise-glyph-big{color:var(--accent); margin:12px 0;}
+.target-chips{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:16px 0 8px;}
+.chip{background:var(--bg-elev); padding:8px 14px; border-radius:20px; font-size:13px; font-weight:600; color:var(--text-dim);}
+.level-hint{color:var(--text-faint); font-size:12px; margin-top:12px;}
+
+.reps-input{width:140px; font-family:var(--font-display); font-size:48px; text-align:center; background:var(--bg-elev); color:var(--accent); border:2px solid var(--bg-elev2); border-radius:var(--radius-sm); padding:12px; margin:16px 0 4px;}
+.reps-input:focus{outline:none; border-color:var(--accent);}
+.target-hint{color:var(--text-faint); font-size:13px; margin-bottom:24px;}
+.rpe-label{font-size:13px; color:var(--text-dim); margin-bottom:10px; font-weight:600;}
+.rpe-scale{display:flex; gap:6px; margin-bottom:6px;}
+.rpe-btn{width:38px; height:38px; border-radius:10px; background:var(--bg-elev); color:var(--text); font-weight:700; font-size:14px;}
+.rpe-btn.active{background:var(--accent); color:#0C0D10;}
+.rpe-legend{display:flex; justify-content:space-between; width:100%; max-width:290px; font-size:10px; color:var(--text-faint); margin-bottom:20px; text-transform:uppercase; letter-spacing:0.05em;}
+
+/* ---- SUMMARY ---- */
+.summary h1{font-size:28px; margin-bottom:20px;}
+.summary-block{background:var(--bg-elev); border-radius:var(--radius-sm); padding:16px; margin-bottom:12px; text-align:left;}
+.summary-title{font-weight:700; font-size:14px; margin-bottom:10px; color:var(--text-dim);}
+.summary-row{display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-top:1px solid var(--bg-elev2);}
+.summary-row:first-of-type{border-top:none;}
+.badge{font-size:12px; font-weight:700; padding:4px 10px; border-radius:20px;}
+.badge-up{background:rgba(200,255,61,0.15); color:var(--accent);}
+.badge-down{background:rgba(255,107,74,0.15); color:var(--danger);}
+
+/* ---- PROGRESS ---- */
+.sub-header{display:flex; align-items:center; gap:14px; margin-bottom:20px;}
+.sub-header h1{font-size:22px;}
+.progress-group{margin-bottom:20px;}
+.group-title{font-size:13px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;}
+.level-track-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--bg-elev);}
+.level-track-name{font-size:14px;}
+.level-track{display:flex; gap:4px;}
+.level-pip{width:14px; height:6px; border-radius:3px; background:var(--bg-elev2);}
+.level-pip.filled{background:var(--accent);}
+
+/* ---- SETTINGS ---- */
+.settings-block{background:var(--bg-elev); border-radius:var(--radius-sm); padding:18px; margin-bottom:14px;}
+.settings-label{font-weight:700; font-size:14px; margin-bottom:12px;}
+.week-picker{display:flex; gap:8px; margin-bottom:10px;}
+.week-btn{flex:1; padding:12px; border-radius:10px; background:var(--bg-elev2); color:var(--text); font-weight:700;}
+.week-btn.active{background:var(--accent); color:#0C0D10;}
+.settings-hint{font-size:12px; color:var(--text-faint); line-height:1.5; margin-top:6px;}
+
+/* animations for glyphs */
+.anim-squat .body{animation:squat-move 1.6s ease-in-out infinite;}
+@keyframes squat-move{0%,100%{transform:translateY(0);}50%{transform:translateY(10px);}}
+.anim-pushup .body{animation:pushup-move 1.4s ease-in-out infinite;}
+@keyframes pushup-move{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.anim-plank{animation:plank-shake 2.4s ease-in-out infinite;}
+@keyframes plank-shake{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
+.anim-lunge .legfront{animation:lunge-move 1.6s ease-in-out infinite;}
+@keyframes lunge-move{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
+.anim-bridge .hip{animation:bridge-move 1.6s ease-in-out infinite; transform-origin:70px 75px;}
+@keyframes bridge-move{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.anim-row .arms{animation:row-move 1.4s ease-in-out infinite;}
+@keyframes row-move{0%,100%{transform:translateX(0);}50%{transform:translateX(6px);}}
+.anim-superman .armslegs{animation:superman-move 1.8s ease-in-out infinite;}
+@keyframes superman-move{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.anim-birddog .extend{animation:birddog-move 1.8s ease-in-out infinite;}
+@keyframes birddog-move{0%,100%{transform:translate(0,0);}50%{transform:translate(4px,-4px);}}
+.anim-deadbug .opposite{animation:deadbug-move 1.6s ease-in-out infinite;}
+@keyframes deadbug-move{0%,100%{transform:translate(0,0);}50%{transform:translate(4px,-6px);}}
+.anim-crunch .curl{animation:crunch-move 1.4s ease-in-out infinite;}
+@keyframes crunch-move{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.anim-jj .limbs{animation:jj-move 1s ease-in-out infinite;}
+@keyframes jj-move{0%,100%{transform:scale(1);}50%{transform:scale(0.7);}}
+.anim-highknee .knee{animation:knee-move 1s ease-in-out infinite; transform-origin:60px 70px;}
+@keyframes knee-move{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+.anim-burpee .crouch{animation:burpee-move 1.4s ease-in-out infinite;}
+@keyframes burpee-move{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(14px) scale(0.85);}}
+.anim-skater .lateral{animation:skater-move 1.2s ease-in-out infinite;}
+@keyframes skater-move{0%,100%{transform:translateX(0);}50%{transform:translateX(-14px);}}
+.anim-wall{animation:wall-shake 2.5s ease-in-out infinite;}
+@keyframes wall-shake{0%,100%{transform:translateX(0);}50%{transform:translateX(1px);}}
+.anim-dip .dip{animation:dip-move 1.4s ease-in-out infinite;}
+@keyframes dip-move{0%,100%{transform:translateY(0);}50%{transform:translateY(8px);}}
+.anim-pike .pike{animation:pike-move 1.6s ease-in-out infinite; transform-origin:85px 40px;}
+@keyframes pike-move{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.anim-ytw .arms{animation:ytw-move 1.8s ease-in-out infinite;}
+@keyframes ytw-move{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.anim-scap .pull{animation:scap-move 1.2s ease-in-out infinite;}
+@keyframes scap-move{0%,100%{transform:scaleX(1);}50%{transform:scaleX(0.85);}}
+.anim-sideplank{animation:plank-shake 2.4s ease-in-out infinite;}
+.anim-legraise .raise{animation:legraise-move 1.6s ease-in-out infinite; transform-origin:35px 65px;}
+@keyframes legraise-move{0%,100%{transform:rotate(0deg);}50%{transform:rotate(-20deg);}}
+.anim-climber .knee{animation:climber-move 0.8s ease-in-out infinite;}
+@keyframes climber-move{0%,100%{transform:translateX(0);}50%{transform:translateX(20px);}}
+.anim-hollow .curl{animation:crunch-move 2s ease-in-out infinite;}
+.anim-twist .rot{animation:twist-move 1.2s ease-in-out infinite; transform-origin:60px 60px;}
+@keyframes twist-move{0%,100%{transform:rotate(0deg);}50%{transform:rotate(15deg);}}
+.anim-rdl .hinge{animation:rdl-move 1.8s ease-in-out infinite; transform-origin:55px 42px;}
+@keyframes rdl-move{0%,100%{transform:rotate(0deg);}50%{transform:rotate(-12deg);}}
+.anim-calf .heel{animation:calf-move 1s ease-in-out infinite;}
+@keyframes calf-move{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.anim-jump{animation:jump-move 0.9s ease-in-out infinite;}
+@keyframes jump-move{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.anim-pistol .ext{animation:pistol-move 1.8s ease-in-out infinite;}
+@keyframes pistol-move{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
+.anim-wind .wave{animation:wind-move 2s linear infinite;}
+@keyframes wind-move{0%{stroke-dashoffset:0;}100%{stroke-dashoffset:-40;}}
+.anim-wind .wave{stroke-dasharray:8 6;}
+.anim-rotate-icon{animation:rotate-spin 3s linear infinite; transform-origin:60px 60px;}
+@keyframes rotate-spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.anim-move circle{animation:move-pulse 1.4s ease-in-out infinite;}
+@keyframes move-pulse{0%,100%{r:10;}50%{r:14;}}
+.anim-arrowup{animation:arrowup-move 1.2s ease-in-out infinite;}
+@keyframes arrowup-move{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+
+@media (prefers-reduced-motion: reduce){
+  [class*="anim-"]{animation:none !important;}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client"
+  }
+}
+</script>
+
+<script type="module">
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createRoot } from 'react-dom/client';
+const h = React.createElement;
+
+// =====================================================================
+// DATA
+// =====================================================================
+const MOBILITY_BLOCK = [
+  { id: 'breath',   name: 'Respiración diafragmática', duration: 60, cue: 'Inhala 4s por la nariz, expande el abdomen. Exhala 6s por la boca.', icon: 'wind' },
+  { id: 'thoracic', name: 'Movilidad torácica',         duration: 60, cue: 'Rotaciones de tronco a 4 apoyos, mano detrás de la nuca.', icon: 'rotate' },
+  { id: 'birddog',  name: 'Bird Dog',                    duration: 60, cue: 'Brazo y pierna contraria. Cadera estable, sin rotar.', icon: 'move' },
+  { id: 'glutebr',  name: 'Puente de glúteo',            duration: 60, cue: 'Empuja con talones, aprieta glúteo arriba 1s.', icon: 'arrow-up' },
+  { id: 'plank',    name: 'Plancha',                     duration: 60, cue: 'Línea recta cabeza-talón. Abdomen y glúteo activos.', icon: 'minus' },
+];
+
+const PHASES = {
+  1: { name: 'Adaptación', color: '#7DD8FF', desc: 'Técnica y rango de movimiento. Volumen bajo, RPE objetivo 5-6.', seriesMult: 1.0, repsMult: 0.85, restSec: 60 },
+  2: { name: 'Hipertrofia', color: '#C8FF3D', desc: 'Volumen alto. RPE objetivo 6-7.', seriesMult: 1.15, repsMult: 1.0, restSec: 45 },
+  3: { name: 'Intensidad', color: '#FF6B4A', desc: 'Máximo esfuerzo controlado. RPE objetivo 8-9.', seriesMult: 1.0, repsMult: 1.15, restSec: 75 },
+  4: { name: 'Descarga', color: '#9AA0AC', desc: 'Recuperación activa. Volumen -40%.', seriesMult: 0.6, repsMult: 0.7, restSec: 45 },
+};
+
+const EXERCISES = [
+  { id: 'sq_01', name: 'Sentadilla asistida (silla)', group: 'inferior', level: 1, baseReps: 12, baseSeries: 3, tempo: '2-0-2', icon: 'chair' },
+  { id: 'sq_02', name: 'Sentadilla peso corporal', group: 'inferior', level: 2, baseReps: 15, baseSeries: 3, tempo: '2-0-1', icon: 'squat' },
+  { id: 'sq_03', name: 'Sentadilla goblet (mochila)', group: 'inferior', level: 3, baseReps: 12, baseSeries: 4, tempo: '3-0-1', icon: 'squat' },
+  { id: 'sq_04', name: 'Sentadilla búlgara', group: 'inferior', level: 4, baseReps: 10, baseSeries: 4, tempo: '2-0-1', icon: 'lunge' },
+  { id: 'sq_05', name: 'Sentadilla a una pierna (pistol asistida)', group: 'inferior', level: 5, baseReps: 6, baseSeries: 4, tempo: '3-1-1', icon: 'pistol' },
+  { id: 'lu_01', name: 'Zancada estática', group: 'inferior', level: 2, baseReps: 10, baseSeries: 3, tempo: '2-0-1', icon: 'lunge' },
+  { id: 'lu_02', name: 'Zancada caminando', group: 'inferior', level: 3, baseReps: 12, baseSeries: 3, tempo: '2-0-1', icon: 'lunge' },
+  { id: 'lu_03', name: 'Zancada con salto', group: 'inferior', level: 4, baseReps: 10, baseSeries: 3, tempo: 'X-0-X', icon: 'lunge' },
+  { id: 'hip_01', name: 'Puente de glúteo', group: 'inferior', level: 1, baseReps: 15, baseSeries: 3, tempo: '2-1-1', icon: 'bridge' },
+  { id: 'hip_02', name: 'Puente a una pierna', group: 'inferior', level: 3, baseReps: 10, baseSeries: 3, tempo: '2-1-1', icon: 'bridge' },
+  { id: 'hip_03', name: 'Peso muerto a una pierna', group: 'inferior', level: 4, baseReps: 8, baseSeries: 3, tempo: '3-0-1', icon: 'rdl' },
+  { id: 'calf_01', name: 'Elevación de talones', group: 'inferior', level: 1, baseReps: 20, baseSeries: 3, tempo: '1-1-1', icon: 'calf' },
+  { id: 'jump_01', name: 'Sentadilla con salto', group: 'inferior', level: 4, baseReps: 12, baseSeries: 3, tempo: 'X-0-X', icon: 'jump' },
+  { id: 'wall_01', name: 'Silla contra pared (isométrico)', group: 'inferior', level: 2, baseReps: 30, baseSeries: 3, tempo: 'iso', isTimeBased: true, icon: 'chair' },
+
+  { id: 'pu_01', name: 'Flexión inclinada (manos elevadas)', group: 'superior_empuje', level: 1, baseReps: 10, baseSeries: 3, tempo: '2-0-1', icon: 'pushup' },
+  { id: 'pu_02', name: 'Flexión de rodillas', group: 'superior_empuje', level: 2, baseReps: 12, baseSeries: 3, tempo: '2-0-1', icon: 'pushup' },
+  { id: 'pu_03', name: 'Flexión estándar', group: 'superior_empuje', level: 3, baseReps: 12, baseSeries: 4, tempo: '2-0-1', icon: 'pushup' },
+  { id: 'pu_04', name: 'Flexión diamante', group: 'superior_empuje', level: 4, baseReps: 10, baseSeries: 3, tempo: '2-0-1', icon: 'pushup' },
+  { id: 'pu_05', name: 'Flexión con palmada', group: 'superior_empuje', level: 5, baseReps: 6, baseSeries: 3, tempo: 'X-0-X', icon: 'pushup' },
+  { id: 'dip_01', name: 'Fondos en silla', group: 'superior_empuje', level: 3, baseReps: 10, baseSeries: 3, tempo: '2-0-1', icon: 'dip' },
+  { id: 'pike_01', name: 'Flexión pike (hombro)', group: 'superior_empuje', level: 4, baseReps: 8, baseSeries: 3, tempo: '2-0-1', icon: 'pike' },
+
+  { id: 'row_01', name: 'Remo invertido (mesa)', group: 'superior_traccion', level: 2, baseReps: 10, baseSeries: 3, tempo: '2-0-1', icon: 'row' },
+  { id: 'row_02', name: 'Superman', group: 'superior_traccion', level: 1, baseReps: 12, baseSeries: 3, tempo: '2-1-1', icon: 'superman' },
+  { id: 'ytw_01', name: 'Y-T-W prono (espalda alta)', group: 'superior_traccion', level: 2, baseReps: 10, baseSeries: 3, tempo: '2-1-1', icon: 'ytw' },
+  { id: 'retract_01', name: 'Retracción escapular', group: 'superior_traccion', level: 1, baseReps: 15, baseSeries: 3, tempo: '1-1-1', icon: 'scapula' },
+
+  { id: 'plank_01', name: 'Plancha frontal', group: 'core', level: 2, baseReps: 30, baseSeries: 3, tempo: 'iso', isTimeBased: true, icon: 'plank' },
+  { id: 'plank_02', name: 'Plancha lateral', group: 'core', level: 3, baseReps: 20, baseSeries: 3, tempo: 'iso', isTimeBased: true, icon: 'sideplank' },
+  { id: 'bird_01', name: 'Bird Dog', group: 'core', level: 1, baseReps: 10, baseSeries: 3, tempo: '2-1-1', icon: 'birddog' },
+  { id: 'deadbug_01', name: 'Dead Bug', group: 'core', level: 2, baseReps: 10, baseSeries: 3, tempo: '2-1-1', icon: 'deadbug' },
+  { id: 'crunch_01', name: 'Crunch abdominal', group: 'core', level: 1, baseReps: 15, baseSeries: 3, tempo: '1-1-1', icon: 'crunch' },
+  { id: 'legraise_01', name: 'Elevación de piernas', group: 'core', level: 3, baseReps: 12, baseSeries: 3, tempo: '2-0-1', icon: 'legraise' },
+  { id: 'mtnclimb_01', name: 'Mountain Climbers', group: 'core', level: 3, baseReps: 20, baseSeries: 3, tempo: 'X-0-X', icon: 'climber' },
+  { id: 'hollow_01', name: 'Hollow Hold', group: 'core', level: 4, baseReps: 20, baseSeries: 3, tempo: 'iso', isTimeBased: true, icon: 'hollow' },
+  { id: 'russtwist_01', name: 'Giro ruso', group: 'core', level: 2, baseReps: 16, baseSeries: 3, tempo: '1-0-1', icon: 'twist' },
+
+  { id: 'jj_01', name: 'Jumping Jacks', group: 'cardio', level: 1, baseReps: 30, baseSeries: 3, tempo: 'X-0-X', icon: 'jj' },
+  { id: 'hik_01', name: 'High Knees', group: 'cardio', level: 2, baseReps: 30, baseSeries: 3, tempo: 'X-0-X', icon: 'highknee' },
+  { id: 'burpee_01', name: 'Burpee', group: 'cardio', level: 4, baseReps: 10, baseSeries: 3, tempo: 'X-0-X', icon: 'burpee' },
+  { id: 'skater_01', name: 'Skater Jumps', group: 'cardio', level: 3, baseReps: 16, baseSeries: 3, tempo: 'X-0-X', icon: 'skater' },
+];
+
+const WEEKLY_TEMPLATE = [
+  { day: 1, name: 'Full Body A', groups: ['inferior', 'superior_empuje', 'core'] },
+  { day: 3, name: 'Full Body B', groups: ['superior_traccion', 'inferior', 'core'] },
+  { day: 5, name: 'Full Body C', groups: ['inferior', 'superior_empuje', 'superior_traccion', 'cardio'] },
+];
+const EXERCISES_PER_SESSION = 5;
+const groupLabels = {
+  inferior: 'Tren inferior', superior_empuje: 'Empuje (pecho/hombro/tríceps)',
+  superior_traccion: 'Tracción (espalda)', core: 'Core', cardio: 'Cardio / metabólico',
+};
+
+// =====================================================================
+// PERSISTENT STORAGE via window.storage (fallback a localStorage si falla)
+// =====================================================================
+const STORAGE_KEY = 'forma_state_v1';
+
+function defaultState() {
+  return {
+    startDate: new Date().toISOString().slice(0, 10),
+    cycleWeek: 1,
+    totalSessionsDone: 0,
+    exerciseLevels: {},
+    history: [],
+  };
+}
+
+function loadStateSync() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return defaultState();
+}
+
+function saveStateSync(state) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+// =====================================================================
+// ENGINE
+// =====================================================================
+function getExerciseLevel(state, exerciseId, defaultLevel) {
+  const rec = state.exerciseLevels[exerciseId];
+  return rec ? rec.level : defaultLevel;
+}
+function getVolumeBonus(state, exerciseId) {
+  const rec = state.exerciseLevels[exerciseId];
+  return rec ? (rec.volumeBonus || 0) : 0;
+}
+function findVariantByLevel(baseGroupId, targetLevel) {
+  const family = EXERCISES.filter(e => e.id.split('_')[0] === baseGroupId);
+  if (!family.length) return null;
+  family.sort((a, b) => a.level - b.level);
+  let best = family[0];
+  for (const e of family) if (e.level <= targetLevel) best = e;
+  return best;
+}
+function computeTargetReps(exercise, phaseKey, state) {
+  const phase = PHASES[phaseKey];
+  const volBonus = getVolumeBonus(state, exercise.id);
+  return Math.round(exercise.baseReps * phase.repsMult) + volBonus * 2;
+}
+function computeTargetSeries(exercise, phaseKey) {
+  const phase = PHASES[phaseKey];
+  return Math.max(2, Math.round(exercise.baseSeries * phase.seriesMult));
+}
+function applyResult(state, exercise, setsDone, phaseKey) {
+  const targetReps = computeTargetReps(exercise, phaseKey, state);
+  const avgReps = setsDone.reduce((s, x) => s + x.reps, 0) / setsDone.length;
+  const avgRpe = setsDone.reduce((s, x) => s + x.rpe, 0) / setsDone.length;
+  const levelBefore = getExerciseLevel(state, exercise.id, exercise.level);
+  const volBefore = getVolumeBonus(state, exercise.id);
+  let levelAfter = levelBefore, volAfter = volBefore;
+  const pctOfTarget = avgReps / targetReps;
+
+  if (pctOfTarget >= 1.0 && avgRpe <= 6) {
+    const familyPrefix = exercise.id.split('_')[0];
+    const nextVariant = findVariantByLevel(familyPrefix, levelBefore + 1);
+    if (nextVariant && nextVariant.level > levelBefore) { levelAfter = nextVariant.level; volAfter = 0; }
+    else { volAfter = volBefore + 1; }
+  } else if (pctOfTarget < 0.7 || avgRpe >= 9) {
+    const familyPrefix = exercise.id.split('_')[0];
+    const prevVariant = findVariantByLevel(familyPrefix, levelBefore - 1);
+    if (prevVariant && prevVariant.level < levelBefore) levelAfter = prevVariant.level;
+    volAfter = 0;
+  } else {
+    volAfter = volBefore + 1;
+  }
+
+  state.exerciseLevels[exercise.id] = { level: levelAfter, volumeBonus: volAfter };
+  state.history.push({ date: new Date().toISOString(), phase: phaseKey, exerciseId: exercise.id, setsDone, levelBefore, levelAfter });
+  saveStateSync(state);
+  return { levelBefore, levelAfter, progressed: levelAfter > levelBefore, regressed: levelAfter < levelBefore };
+}
+function generateSession(state) {
+  const jsDay = new Date().getDay();
+  const isoDay = jsDay === 0 ? 7 : jsDay;
+  let template = WEEKLY_TEMPLATE.find(t => t.day === isoDay);
+  if (!template) template = WEEKLY_TEMPLATE[state.totalSessionsDone % WEEKLY_TEMPLATE.length];
+  const phaseKey = state.cycleWeek;
+  const phase = PHASES[phaseKey];
+  const picked = [];
+  const groups = template.groups;
+  let gi = 0;
+  const usedIds = new Set();
+  while (picked.length < EXERCISES_PER_SESSION) {
+    const group = groups[gi % groups.length];
+    const candidates = EXERCISES.filter(e => e.group === group && !usedIds.has(e.id.split('_')[0]));
+    if (candidates.length) {
+      const familyPrefixes = [...new Set(candidates.map(e => e.id.split('_')[0]))];
+      const prefix = familyPrefixes[Math.floor(Math.random() * familyPrefixes.length)];
+      let effectiveLevel = 1;
+      for (const [exId, rec] of Object.entries(state.exerciseLevels)) {
+        if (exId.split('_')[0] === prefix) effectiveLevel = rec.level;
+      }
+      const variant = findVariantByLevel(prefix, effectiveLevel) || candidates[0];
+      picked.push(variant);
+      usedIds.add(prefix);
+    }
+    gi++;
+    if (gi > 30) break;
+  }
+  const exercisesWithTargets = picked.map(ex => ({
+    ...ex, targetReps: computeTargetReps(ex, phaseKey, state), targetSeries: computeTargetSeries(ex, phaseKey), restSec: phase.restSec,
+  }));
+  return { templateName: template.name, phaseKey, phase, exercises: exercisesWithTargets };
+}
+function completeSession(state) {
+  state.totalSessionsDone += 1;
+  if (state.totalSessionsDone % 3 === 0) state.cycleWeek = state.cycleWeek >= 4 ? 1 : state.cycleWeek + 1;
+  saveStateSync(state);
+}
+
+// =====================================================================
+// ICONS
+// =====================================================================
+function iconSvg(key) {
+  const c = 'stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  const anims = {
+    squat: `<g class="anim-squat"><circle cx="60" cy="30" r="14" ${c}/><path class="body" d="M60 44 L60 75 M60 75 L40 110 M60 75 L80 110" ${c}/><path class="arms" d="M60 55 L30 70 M60 55 L90 70" ${c}/></g>`,
+    pushup: `<g class="anim-pushup"><circle cx="30" cy="50" r="12" ${c}/><path class="body" d="M42 55 L100 75" ${c}/><path d="M42 55 L42 75 M100 75 L100 95" ${c}/></g>`,
+    plank: `<g class="anim-plank"><circle cx="25" cy="55" r="12" ${c}/><path d="M37 58 L105 68" ${c}/><path d="M37 58 L37 90 M105 68 L105 95" ${c}/></g>`,
+    lunge: `<g class="anim-lunge"><circle cx="60" cy="25" r="13" ${c}/><path d="M60 38 L60 65" ${c}/><path class="legfront" d="M60 65 L85 105" ${c}/><path class="legback" d="M60 65 L35 90 L45 110" ${c}/></g>`,
+    bridge: `<g class="anim-bridge"><circle cx="25" cy="85" r="12" ${c}/><path class="hip" d="M37 85 L70 65 L105 85" ${c}/><path d="M105 85 L105 110" ${c}/></g>`,
+    row: `<g class="anim-row"><circle cx="60" cy="30" r="13" ${c}/><path d="M60 43 L60 90" ${c}/><path class="arms" d="M60 55 L30 55 M60 55 L90 55" ${c}/></g>`,
+    superman: `<g class="anim-superman"><circle cx="60" cy="60" r="12" ${c}/><path class="armslegs" d="M60 60 L30 45 M60 60 L90 45 M60 72 L35 95 M60 72 L85 95" ${c}/></g>`,
+    birddog: `<g class="anim-birddog"><circle cx="30" cy="40" r="11" ${c}/><path d="M40 45 L95 55" ${c}/><path class="extend" d="M95 55 L118 45 M40 45 L40 75" ${c}/><path d="M60 50 L60 78" ${c}/></g>`,
+    deadbug: `<g class="anim-deadbug"><circle cx="60" cy="30" r="12" ${c}/><path d="M60 42 L60 65" ${c}/><path class="opposite" d="M60 65 L35 60 M60 65 L85 100" ${c}/></g>`,
+    crunch: `<g class="anim-crunch"><circle cx="30" cy="60" r="12" ${c}/><path class="curl" d="M40 60 Q70 50 95 65" ${c}/></g>`,
+    jj: `<g class="anim-jj"><circle cx="60" cy="25" r="13" ${c}/><path d="M60 38 L60 80" ${c}/><path class="limbs" d="M60 45 L30 25 M60 45 L90 25 M60 80 L35 105 M60 80 L85 105" ${c}/></g>`,
+    highknee: `<g class="anim-highknee"><circle cx="55" cy="25" r="12" ${c}/><path d="M55 37 L60 70" ${c}/><path class="knee" d="M60 70 L45 55 L40 30" ${c}/><path d="M60 70 L75 100" ${c}/></g>`,
+    burpee: `<g class="anim-burpee"><circle cx="60" cy="35" r="13" ${c}/><path class="crouch" d="M60 48 L60 75 M60 75 L40 100 M60 75 L80 100" ${c}/></g>`,
+    skater: `<g class="anim-skater"><circle cx="60" cy="25" r="12" ${c}/><path d="M60 37 L60 65" ${c}/><path class="lateral" d="M60 65 L90 100 M60 65 L40 45" ${c}/></g>`,
+    chair: `<g class="anim-wall"><circle cx="60" cy="30" r="13" ${c}/><path d="M60 43 L60 72 L82 72 L82 108" ${c}/><path d="M60 72 L45 108" ${c}/></g>`,
+    dip: `<g class="anim-dip"><circle cx="60" cy="30" r="12" ${c}/><path d="M60 42 L60 65" ${c}/><path class="dip" d="M60 65 L35 55 M60 65 L85 55" ${c}/></g>`,
+    pike: `<g class="anim-pike"><circle cx="45" cy="70" r="12" ${c}/><path class="pike" d="M55 65 L85 40 L105 65" ${c}/></g>`,
+    ytw: `<g class="anim-ytw"><circle cx="60" cy="35" r="12" ${c}/><path d="M60 47 L60 90" ${c}/><path class="arms" d="M60 55 L25 35 M60 55 L95 35" ${c}/></g>`,
+    scapula: `<g class="anim-scap"><circle cx="60" cy="30" r="12" ${c}/><path d="M60 42 L60 90" ${c}/><path class="pull" d="M35 55 L60 60 L85 55" ${c}/></g>`,
+    sideplank: `<g class="anim-sideplank"><circle cx="30" cy="45" r="12" ${c}/><path d="M40 48 L100 65" ${c}/><path d="M40 48 L40 90" ${c}/></g>`,
+    legraise: `<g class="anim-legraise"><circle cx="30" cy="30" r="12" ${c}/><path d="M35 40 L35 65" ${c}/><path class="raise" d="M35 65 L70 30" ${c}/></g>`,
+    climber: `<g class="anim-climber"><circle cx="30" cy="45" r="11" ${c}/><path d="M40 48 L100 65" ${c}/><path class="knee" d="M100 65 L65 60 L55 40" ${c}/></g>`,
+    hollow: `<g class="anim-hollow"><circle cx="35" cy="55" r="12" ${c}/><path class="curl" d="M45 60 Q65 75 90 65" ${c}/></g>`,
+    twist: `<g class="anim-twist"><circle cx="60" cy="30" r="12" ${c}/><path d="M60 42 L60 75" ${c}/><path class="rot" d="M35 60 L60 55 L85 60" ${c}/></g>`,
+    rdl: `<g class="anim-rdl"><circle cx="55" cy="30" r="12" ${c}/><path class="hinge" d="M55 42 Q75 60 60 100" ${c}/></g>`,
+    calf: `<g class="anim-calf"><circle cx="60" cy="30" r="13" ${c}/><path d="M60 43 L60 90" ${c}/><path class="heel" d="M50 90 L70 90 L60 105" ${c}/></g>`,
+    jump: `<g class="anim-jump"><circle cx="60" cy="22" r="13" ${c}/><path d="M60 35 L55 65 M55 65 L40 100 M55 65 L70 100" ${c}/></g>`,
+    pistol: `<g class="anim-pistol"><circle cx="55" cy="25" r="12" ${c}/><path d="M55 37 L60 70" ${c}/><path class="ext" d="M60 70 L95 75 M60 70 L45 100" ${c}/></g>`,
+    wind: `<g class="anim-wind"><path class="wave" d="M20 60 Q40 40 60 60 T100 60" ${c}/></g>`,
+    rotate: `<g class="anim-rotate-icon"><circle cx="60" cy="60" r="35" ${c} stroke-dasharray="10 8"/></g>`,
+    move: `<g class="anim-move"><circle cx="60" cy="60" r="10" ${c}/><path d="M60 20 L60 100 M20 60 L100 60" ${c}/></g>`,
+    'arrow-up': `<g class="anim-arrowup"><path d="M60 100 L60 25 M35 50 L60 20 L85 50" ${c}/></g>`,
+    minus: `<g class="anim-minus"><path d="M25 60 L95 60" ${c}/></g>`,
+  };
+  return anims[key] || anims.move;
+}
+function ExerciseGlyph({ iconKey, size = 96 }) {
+  const ref = useRef(null);
+  useEffect(() => { if (ref.current) ref.current.innerHTML = iconSvg(iconKey); }, [iconKey]);
+  return h('div', { className: 'glyph-wrap', style: { width: size, height: size } },
+    h('svg', { ref, viewBox: '0 0 120 120', width: size, height: size })
+  );
+}
+
+// =====================================================================
+// UTIL
+// =====================================================================
+function fmtTime(s) {
+  s = Math.max(0, s);
+  const m = Math.floor(s / 60); const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+function useCountdown(initial, onComplete, running) {
+  const [remaining, setRemaining] = useState(initial);
+  const cb = useRef(onComplete); cb.current = onComplete;
+  useEffect(() => { setRemaining(initial); }, [initial]);
+  useEffect(() => {
+    if (!running) return;
+    if (remaining <= 0) { cb.current && cb.current(); return; }
+    const t = setTimeout(() => setRemaining(r => r - 1), 1000);
+    return () => clearTimeout(t);
+  }, [remaining, running]);
+  return [remaining, setRemaining];
+}
+
+// =====================================================================
+// SCREENS
+// =====================================================================
+function Home({ state, onStart, onOpenProgress, onOpenSettings }) {
+  const phase = PHASES[state.cycleWeek];
+  const sessionsInWeek = state.totalSessionsDone % 3;
+  return h('div', { className: 'screen home' },
+    h('header', { className: 'home-header' },
+      h('div', null, h('p', { className: 'eyebrow' }, 'Ciclo actual'), h('h1', null, `Semana ${state.cycleWeek}`)),
+      h('button', { className: 'icon-btn', onClick: onOpenSettings }, '⚙')
+    ),
+    h('div', { className: 'phase-card', style: { '--phase-color': phase.color } },
+      h('p', { className: 'phase-name', style: { color: phase.color } }, phase.name),
+      h('p', { className: 'phase-desc' }, phase.desc),
+      h('div', { className: 'phase-progress' }, [0, 1, 2].map(i => h('span', { key: i, className: `dot ${i < sessionsInWeek ? 'filled' : ''}`, style: i < sessionsInWeek ? { background: phase.color } : {} }))),
+      h('p', { className: 'phase-progress-label' }, `${sessionsInWeek}/3 sesiones esta semana`)
+    ),
+    h('div', { className: 'cycle-track' }, [1, 2, 3, 4].map(w =>
+      h('div', { key: w, className: `cycle-step ${w === state.cycleWeek ? 'active' : ''} ${w < state.cycleWeek ? 'done' : ''}` },
+        h('span', { className: 'cycle-num' }, w),
+        h('span', { className: 'cycle-label' }, PHASES[w].name)
+      )
+    )),
+    h('button', { className: 'btn-primary btn-huge', onClick: onStart }, 'Empezar entreno de hoy'),
+    h('div', { className: 'stat-row' },
+      h('div', { className: 'stat-box' }, h('p', { className: 'stat-num' }, state.totalSessionsDone), h('p', { className: 'stat-label' }, 'Sesiones totales')),
+      h('div', { className: 'stat-box' }, h('p', { className: 'stat-num' }, Object.keys(state.exerciseLevels).length), h('p', { className: 'stat-label' }, 'Ejercicios calibrados'))
+    ),
+    h('button', { className: 'link-btn', onClick: onOpenProgress }, 'Ver progreso completo →')
+  );
+}
+
+function MobilityBlock({ onDone }) {
+  const [idx, setIdx] = useState(0);
+  const [running, setRunning] = useState(true);
+  const step = MOBILITY_BLOCK[idx];
+  const advance = useCallback(() => {
+    if (idx < MOBILITY_BLOCK.length - 1) setIdx(i => i + 1); else onDone();
+  }, [idx, onDone]);
+  const [remaining, setRemaining] = useCountdown(step.duration, advance, running);
+  useEffect(() => { setRemaining(step.duration); }, [idx]);
+  const pct = ((step.duration - remaining) / step.duration) * 100;
+
+  return h('div', { className: 'screen mobility' },
+    h('p', { className: 'eyebrow' }, `Preparación obligatoria · Paso ${idx + 1}/${MOBILITY_BLOCK.length}`),
+    h('div', { className: 'mobility-ring' },
+      h('svg', { viewBox: '0 0 120 120', className: 'ring-svg' },
+        h('circle', { cx: 60, cy: 60, r: 54, className: 'ring-bg' }),
+        h('circle', { cx: 60, cy: 60, r: 54, className: 'ring-fg', style: { strokeDashoffset: 339.3 - (339.3 * pct) / 100 } })
+      ),
+      h('div', { className: 'ring-center' }, h(ExerciseGlyph, { iconKey: step.icon, size: 64 }))
+    ),
+    h('h2', null, step.name),
+    h('p', { className: 'cue-text' }, step.cue),
+    h('p', { className: 'timer-big' }, fmtTime(remaining)),
+    h('div', { className: 'mobility-controls' },
+      h('button', { className: 'btn-secondary', onClick: () => setRunning(r => !r) }, running ? 'Pausar' : 'Reanudar'),
+      h('button', { className: 'btn-primary', onClick: advance }, idx < MOBILITY_BLOCK.length - 1 ? 'Saltar paso' : 'Finalizar bloque')
+    ),
+    h('div', { className: 'mobility-dots' }, MOBILITY_BLOCK.map((s, i) =>
+      h('span', { key: s.id, className: `mdot ${i === idx ? 'active' : ''} ${i < idx ? 'done' : ''}` })
+    ))
+  );
+}
+
+function TrainingSession({ session, state, onFinish }) {
+  const [exIdx, setExIdx] = useState(0);
+  const [setIdx, setSetIdx] = useState(0);
+  const [phase, setPhase] = useState('work');
+  const [setsLog, setSetsLog] = useState({});
+  const [repsInput, setRepsInput] = useState('');
+  const [rpeInput, setRpeInput] = useState(6);
+  const [results, setResults] = useState([]);
+
+  const ex = session.exercises[exIdx];
+  const isLast = exIdx === session.exercises.length - 1;
+  const isLastSet = setIdx === ex.targetSeries - 1;
+
+  const [restRemaining, setRestRemaining] = useCountdown(ex.restSec, () => {
+    if (isLastSet) goNextExercise(); else { setSetIdx(s => s + 1); setPhase('work'); }
+  }, phase === 'rest');
+
+  function logSet() {
+    const reps = parseInt(repsInput, 10) || 0;
+    const entry = { reps, rpe: rpeInput };
+    setSetsLog(prev => ({ ...prev, [ex.id]: [...(prev[ex.id] || []), entry] }));
+    setRepsInput(''); setRpeInput(6); setPhase('rest'); setRestRemaining(ex.restSec);
+  }
+  function goNextExercise() {
+    const doneSets = setsLog[ex.id] || [];
+    let newResults = results;
+    if (doneSets.length) {
+      const r = applyResult(state, ex, doneSets, session.phaseKey);
+      newResults = [...results, { exercise: ex, ...r }];
+      setResults(newResults);
+    }
+    if (isLast) { completeSession(state); onFinish(newResults); }
+    else { setExIdx(i => i + 1); setSetIdx(0); setPhase('work'); }
+  }
+
+  if (phase === 'rest') {
+    return h('div', { className: 'screen rest' },
+      h('p', { className: 'eyebrow' }, 'Descanso'),
+      h('p', { className: 'timer-big rest-timer' }, fmtTime(restRemaining)),
+      h('p', { className: 'rest-next' }, isLastSet ? (isLast ? 'Fin de sesión' : `Siguiente: ${session.exercises[exIdx + 1].name}`) : `Siguiente: Serie ${setIdx + 2}/${ex.targetSeries} · ${ex.name}`),
+      h('button', { className: 'btn-secondary', onClick: () => setRestRemaining(0) }, 'Saltar descanso')
+    );
+  }
+  if (phase === 'logging') {
+    return h('div', { className: 'screen logging' },
+      h('p', { className: 'eyebrow' }, `${ex.name} · Serie ${setIdx + 1}/${ex.targetSeries}`),
+      h('h2', null, '¿Cuántas repeticiones has hecho?'),
+      h('input', { type: 'number', inputMode: 'numeric', className: 'reps-input', value: repsInput, onChange: e => setRepsInput(e.target.value), placeholder: String(ex.targetReps), autoFocus: true }),
+      h('p', { className: 'target-hint' }, `Objetivo: ${ex.targetReps} reps`),
+      h('p', { className: 'rpe-label' }, 'Esfuerzo percibido (RPE)'),
+      h('div', { className: 'rpe-scale' }, [3, 5, 6, 7, 8, 9, 10].map(v =>
+        h('button', { key: v, className: `rpe-btn ${rpeInput === v ? 'active' : ''}`, onClick: () => setRpeInput(v) }, v)
+      )),
+      h('div', { className: 'rpe-legend' }, h('span', null, 'Fácil'), h('span', null, 'Al límite')),
+      h('button', { className: 'btn-primary btn-huge', onClick: logSet, disabled: !repsInput }, 'Registrar serie')
+    );
+  }
+  return h('div', { className: 'screen work' },
+    h('p', { className: 'eyebrow' }, `${session.templateName} · Ejercicio ${exIdx + 1}/${session.exercises.length}`),
+    h('div', { className: 'exercise-glyph-big' }, h(ExerciseGlyph, { iconKey: ex.icon, size: 140 })),
+    h('h2', null, ex.name),
+    h('div', { className: 'target-chips' },
+      h('span', { className: 'chip' }, `Serie ${setIdx + 1}/${ex.targetSeries}`),
+      h('span', { className: 'chip' }, `${ex.targetReps} reps`),
+      h('span', { className: 'chip' }, `Tempo ${ex.tempo}`)
+    ),
+    h('button', { className: 'btn-primary btn-huge', onClick: () => setPhase('logging') }, 'Serie completada'),
+    setIdx === 0 ? h('p', { className: 'level-hint' }, `Nivel actual: ${getExerciseLevel(state, ex.id, ex.level)}/5`) : null
+  );
+}
+
+function SessionSummary({ results, onDone }) {
+  const progressed = results.filter(r => r.progressed);
+  const regressed = results.filter(r => r.regressed);
+  return h('div', { className: 'screen summary' },
+    h('p', { className: 'eyebrow' }, 'Sesión completada'),
+    h('h1', null, 'Buen trabajo 💪'),
+    progressed.length > 0 ? h('div', { className: 'summary-block up' },
+      h('p', { className: 'summary-title' }, 'Subiste de nivel'),
+      progressed.map(r => h('div', { key: r.exercise.id, className: 'summary-row' },
+        h('span', null, r.exercise.name), h('span', { className: 'badge badge-up' }, `Nv. ${r.levelBefore} → ${r.levelAfter}`)
+      ))
+    ) : null,
+    regressed.length > 0 ? h('div', { className: 'summary-block down' },
+      h('p', { className: 'summary-title' }, 'Ajustamos la dificultad'),
+      regressed.map(r => h('div', { key: r.exercise.id, className: 'summary-row' },
+        h('span', null, r.exercise.name), h('span', { className: 'badge badge-down' }, `Nv. ${r.levelBefore} → ${r.levelAfter}`)
+      ))
+    ) : null,
+    (progressed.length === 0 && regressed.length === 0) ? h('p', { className: 'cue-text' }, 'Mantienes el nivel actual en todos los ejercicios. La próxima sesión sube ligeramente el volumen.') : null,
+    h('button', { className: 'btn-primary btn-huge', onClick: onDone }, 'Volver al inicio')
+  );
+}
+
+function Progress({ state, onBack }) {
+  const groups = [...new Set(EXERCISES.map(e => e.group))];
+  return h('div', { className: 'screen progress' },
+    h('header', { className: 'sub-header' }, h('button', { className: 'icon-btn', onClick: onBack }, '←'), h('h1', null, 'Tu progreso')),
+    h('div', { className: 'stat-row' },
+      h('div', { className: 'stat-box' }, h('p', { className: 'stat-num' }, state.totalSessionsDone), h('p', { className: 'stat-label' }, 'Sesiones')),
+      h('div', { className: 'stat-box' }, h('p', { className: 'stat-num' }, state.history.length), h('p', { className: 'stat-label' }, 'Ejercicios registrados')),
+      h('div', { className: 'stat-box' }, h('p', { className: 'stat-num' }, Object.values(state.exerciseLevels).filter(v => v.level >= 3).length), h('p', { className: 'stat-label' }, 'En nivel intermedio+'))
+    ),
+    groups.map(g => {
+      const familyPrefixes = [...new Set(EXERCISES.filter(e => e.group === g).map(e => e.id.split('_')[0]))];
+      return h('div', { key: g, className: 'progress-group' },
+        h('p', { className: 'group-title' }, groupLabels[g]),
+        familyPrefixes.map(prefix => {
+          const family = EXERCISES.filter(e => e.id.split('_')[0] === prefix).sort((a, b) => a.level - b.level);
+          let level = 1;
+          for (const [exId, rec] of Object.entries(state.exerciseLevels)) if (exId.split('_')[0] === prefix) level = rec.level;
+          const current = family.find(e => e.level === level) || family[0];
+          return h('div', { key: prefix, className: 'level-track-row' },
+            h('span', { className: 'level-track-name' }, current.name),
+            h('div', { className: 'level-track' }, [1, 2, 3, 4, 5].map(l => h('span', { key: l, className: `level-pip ${l <= level ? 'filled' : ''}` })))
+          );
+        })
+      );
+    })
+  );
+}
+
+function Settings({ state, onBack, onReset, onWeekChange }) {
+  return h('div', { className: 'screen settings' },
+    h('header', { className: 'sub-header' }, h('button', { className: 'icon-btn', onClick: onBack }, '←'), h('h1', null, 'Configuración')),
+    h('div', { className: 'settings-block' },
+      h('p', { className: 'settings-label' }, 'Semana del ciclo'),
+      h('div', { className: 'week-picker' }, [1, 2, 3, 4].map(w =>
+        h('button', { key: w, className: `week-btn ${state.cycleWeek === w ? 'active' : ''}`, onClick: () => onWeekChange(w) }, w)
+      )),
+      h('p', { className: 'settings-hint' }, 'Fuerza manualmente la fase de periodización si lo necesitas.')
+    ),
+    h('div', { className: 'settings-block' },
+      h('p', { className: 'settings-label' }, 'Datos'),
+      h('button', { className: 'btn-danger', onClick: onReset }, 'Reiniciar todo el progreso'),
+      h('p', { className: 'settings-hint' }, 'Borra niveles, historial y vuelve a Semana 1.')
+    ),
+    h('div', { className: 'settings-block' },
+      h('p', { className: 'settings-label' }, 'Acerca de'),
+      h('p', { className: 'settings-hint' }, 'Entrenamientos periodizados en ciclos de 4 semanas (Adaptación → Hipertrofia → Intensidad → Descarga). El nivel de cada ejercicio se recalcula automáticamente según tus repeticiones y esfuerzo percibido.')
+    )
+  );
+}
+
+function App() {
+  const [state, setState] = useState(() => loadStateSync());
+  const [screen, setScreen] = useState('home');
+  const [activeSession, setActiveSession] = useState(null);
+  const [lastResults, setLastResults] = useState([]);
+
+  function handleStart() { setActiveSession(generateSession(state)); setScreen('mobility'); }
+  function handleMobilityDone() { setScreen('session'); }
+  function handleSessionFinish(results) { setLastResults(results); setState({ ...state }); setScreen('summary'); }
+  function handleReset() {
+    if (!confirm('Esto borrará todo tu progreso. ¿Continuar?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    setState(defaultState());
+    setScreen('home');
+  }
+  function handleWeekChange(w) { state.cycleWeek = w; saveStateSync(state); setState({ ...state }); }
+
+  return h('div', { className: 'app-shell' },
+    screen === 'home' && h(Home, { state, onStart: handleStart, onOpenProgress: () => setScreen('progress'), onOpenSettings: () => setScreen('settings') }),
+    screen === 'mobility' && h(MobilityBlock, { onDone: handleMobilityDone }),
+    screen === 'session' && activeSession && h(TrainingSession, { session: activeSession, state, onFinish: handleSessionFinish }),
+    screen === 'summary' && h(SessionSummary, { results: lastResults, onDone: () => setScreen('home') }),
+    screen === 'progress' && h(Progress, { state, onBack: () => setScreen('home') }),
+    screen === 'settings' && h(Settings, { state, onBack: () => setScreen('home'), onReset: handleReset, onWeekChange: handleWeekChange })
+  );
+}
+
+createRoot(document.getElementById('root')).render(h(App));
+</script>
+
+<script>
+// ---- PWA install support: manifest + icon generados en runtime + service worker ----
+(function(){
+  function makeIconDataURL(size){
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#12141A'; ctx.fillRect(0,0,size,size);
+    ctx.fillStyle = '#C8FF3D';
+    ctx.font = `900 ${size*0.55}px Arial`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('F', size/2, size/2 + size*0.05);
+    return canvas.toDataURL('image/png');
+  }
+  const icon192 = makeIconDataURL(192);
+  const icon512 = makeIconDataURL(512);
+  document.getElementById('apple-touch-icon').href = icon192;
+  document.getElementById('favicon').href = icon192;
+
+  const manifest = {
+    name: "Forma — Entrenamiento periodizado",
+    short_name: "Forma",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#12141A",
+    theme_color: "#12141A",
+    icons: [
+      { src: icon192, sizes: "192x192", type: "image/png" },
+      { src: icon512, sizes: "512x512", type: "image/png" }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  document.getElementById('manifest-link').href = URL.createObjectURL(blob);
+})();
+</script>
+</body>
+</html>
