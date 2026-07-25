@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>Forma 55 — Circuito diario</title>
+<meta name="theme-color" content="#12141A" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Forma 55" />
+<link id="manifest-link" rel="manifest" href="data:application/manifest+json,">
+<link rel="apple-touch-icon" id="apple-touch-icon">
+<link rel="icon" id="favicon">
+<style>
+:root{
+  --bg:#12141A; --bg-elev:#1B1E27; --bg-elev2:#242835;
+  --accent:#C8FF3D; --accent-dim:#8FBF2B;
+  --text:#F4F6F8; --text-dim:#9AA0AC; --text-faint:#5C616E;
+  --danger:#FF6B4A; --up:#7DD8FF;
+  --radius:20px; --radius-sm:12px;
+  --font-display:'Archivo Black','Arial Black',sans-serif;
+  --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--font-body);height:100%;overscroll-behavior:none;}
+body{-webkit-user-select:none;user-select:none;}
+input{user-select:text;-webkit-user-select:text;}
+#root{min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;}
+button{font-family:inherit; border:none; cursor:pointer; -webkit-appearance:none;}
+h1,h2{font-family:var(--font-display); font-weight:900; letter-spacing:-0.02em; margin:0;}
+p{margin:0;}
+
+.app-shell{flex:1; display:flex; flex-direction:column; max-width:520px; margin:0 auto; width:100%; position:relative;}
+.screen{flex:1; display:flex; flex-direction:column; padding:24px 20px calc(24px + env(safe-area-inset-bottom)); padding-top:calc(24px + env(safe-area-inset-top)); animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+.eyebrow{font-size:12px; text-transform:uppercase; letter-spacing:0.12em; color:var(--accent); font-weight:700; margin-bottom:6px;}
+
+/* ---- HOME ---- */
+.home-header{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;}
+.home-header h1{font-size:30px;}
+.icon-btn{background:var(--bg-elev); color:var(--text); width:44px; height:44px; border-radius:12px; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+
+.phase-card{background:var(--bg-elev); border-radius:var(--radius); padding:22px; margin-bottom:16px; border-left:4px solid var(--phase-color);}
+.phase-name{font-family:var(--font-display); font-size:24px; color:var(--phase-color); margin-bottom:6px;}
+.phase-desc{color:var(--text-dim); font-size:14px; line-height:1.5; margin-bottom:16px;}
+.phase-progress{display:flex; gap:5px; margin-bottom:8px;}
+.dot{width:100%; height:6px; border-radius:3px; background:var(--bg-elev2);}
+.dot.filled{background:var(--phase-color);}
+.phase-progress-label{font-size:12px; color:var(--text-faint);}
+
+.cycle-track{display:flex; gap:8px; margin-bottom:20px;}
+.cycle-step{flex:1; text-align:center; padding:10px 4px; border-radius:var(--radius-sm); background:var(--bg-elev); opacity:0.45;}
+.cycle-step.active{opacity:1; background:var(--bg-elev2); outline:1.5px solid var(--accent);}
+.cycle-step.done{opacity:0.7;}
+.cycle-num{display:block; font-family:var(--font-display); font-size:16px;}
+.cycle-label{display:block; font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.04em; margin-top:2px;}
+
+.btn-primary{background:var(--accent); color:#0C0D10; font-weight:800; border-radius:var(--radius-sm); padding:16px; font-size:16px;}
+.btn-primary:disabled{opacity:0.35;}
+.btn-huge{width:100%; padding:20px; font-size:17px; border-radius:16px; margin:8px 0;}
+.btn-secondary{background:var(--bg-elev2); color:var(--text); border-radius:var(--radius-sm); padding:16px; font-size:15px; font-weight:600;}
+.btn-danger{background:transparent; color:var(--danger); border:1.5px solid var(--danger); border-radius:var(--radius-sm); padding:14px 20px; font-weight:700; width:100%;}
+
+.stat-row{display:flex; gap:10px; margin:16px 0;}
+.stat-box{flex:1; background:var(--bg-elev); border-radius:var(--radius-sm); padding:16px; text-align:center;}
+.stat-num{font-family:var(--font-display); font-size:26px; color:var(--accent);}
+.stat-label{font-size:11px; color:var(--text-dim); margin-top:2px;}
+
+.link-btn{background:none; color:var(--text-dim); text-align:center; padding:10px; font-size:14px; text-decoration:underline; text-underline-offset:3px;}
+
+/* ---- ROUND SELECTOR ---- */
+.rounds-block{background:var(--bg-elev); border-radius:var(--radius); padding:16px 18px; margin-bottom:12px;}
+.rounds-label{font-size:13px; font-weight:700; color:var(--text-dim); margin-bottom:10px;}
+.rounds-picker{display:flex; gap:8px;}
+.round-btn{flex:1; padding:12px; border-radius:12px; background:var(--bg-elev2); color:var(--text); font-weight:800; text-align:center;}
+.round-btn .rn{display:block; font-family:var(--font-display); font-size:20px;}
+.round-btn .rl{display:block; font-size:9px; color:var(--text-dim); text-transform:uppercase; margin-top:2px;}
+.round-btn.active{background:var(--accent); }
+.round-btn.active .rn,.round-btn.active .rl{color:#0C0D10;}
+.rounds-hint{font-size:11.5px; color:var(--text-faint); margin-top:10px; line-height:1.4;}
+.time-estimate{font-size:13px; color:var(--text); background:var(--bg-elev2); border-radius:10px; padding:10px 12px; margin-top:10px;}
+.time-estimate strong{color:var(--accent);}
+
+/* ---- TODAY PREVIEW / REST DAY ---- */
+.today-preview{background:var(--bg-elev); border-radius:var(--radius); padding:18px; margin-bottom:6px;}
+.today-title{font-weight:800; font-size:15px; margin-bottom:12px;}
+.today-list{display:flex; flex-direction:column; gap:2px; margin-bottom:6px;}
+.today-row{display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--bg-elev2); gap:10px;}
+.today-row:last-child{border-bottom:none;}
+.today-ex-name{font-size:14px; flex:1;}
+.today-ex-detail{font-size:12.5px; color:var(--accent); font-weight:700; white-space:nowrap;}
+.rest-day-card{background:var(--bg-elev); border-radius:var(--radius); padding:22px; text-align:center;}
+.rest-day-title{font-family:var(--font-display); font-size:20px; margin-bottom:10px; color:var(--up);}
+
+/* ---- WEEKLY PLAN ---- */
+.weekplan-intro{text-align:left; max-width:none; margin-bottom:18px;}
+.weekplan-day{background:var(--bg-elev); border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:10px;}
+.weekplan-day.is-today{outline:1.5px solid var(--accent);}
+.weekplan-day-header{display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;}
+.weekplan-day-name{font-family:var(--font-display); font-size:15px;}
+.weekplan-day-focus{font-size:12px; color:var(--text-dim);}
+.weekplan-today-badge{margin-left:auto; background:var(--accent); color:#0C0D10; font-size:10px; font-weight:800; padding:3px 8px; border-radius:20px; text-transform:uppercase;}
+.weekplan-ex-row{display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-top:1px solid var(--bg-elev2); font-size:13px;}
+.weekplan-ex-row:first-of-type{border-top:none;}
+.weekplan-ex-name{flex:1;}
+.weekplan-ex-detail{color:var(--text-dim); white-space:nowrap; font-weight:600;}
+.rest-summary{opacity:0.6;}
+
+/* ---- WORK / REST / LOGGING / HYPO shared ---- */
+.hypo,.work,.rest,.logging,.roundrest{align-items:center; text-align:center; justify-content:center;}
+.mobility-ring{position:relative; width:186px; height:216px; margin:16px 0;}
+.ring-svg{width:100%; height:100%; transform:rotate(-90deg); position:absolute; inset:0;}
+.ring-bg{fill:none; stroke:var(--bg-elev2); stroke-width:5;}
+.ring-fg{fill:none; stroke:var(--accent); stroke-width:5; stroke-linecap:round; stroke-dasharray:339.3; transition:stroke-dashoffset 1s linear;}
+.ring-center{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--accent);}
+
+h2{font-size:23px; margin:8px 0;}
+.cue-text{color:var(--text-dim); font-size:15px; line-height:1.5; max-width:340px; margin:0 auto 12px;}
+.timer-big{font-family:var(--font-display); font-size:52px; margin:12px 0; letter-spacing:-0.02em;}
+.rest-timer{color:var(--up);}
+.rest-next{color:var(--text); font-size:15px; font-weight:700; margin-bottom:2px;}
+.rest-next-detail{color:var(--accent); font-size:13px; font-weight:700; margin-bottom:24px;}
+.roundrest .timer-big{color:var(--danger);}
+.roundrest-badge{background:rgba(255,107,74,0.15); color:var(--danger); font-size:12px; font-weight:800; padding:6px 14px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.04em;}
+
+.mobility-controls{display:flex; gap:10px; width:100%; margin-top:16px;}
+.mobility-controls .btn-secondary,.mobility-controls .btn-primary{flex:1; margin:0;}
+.mobility-dots{display:flex; gap:8px; margin-top:24px; flex-wrap:wrap; justify-content:center;}
+.mdot{width:8px; height:8px; border-radius:50%; background:var(--bg-elev2);}
+.mdot.active{background:var(--accent); width:22px; border-radius:4px;}
+.mdot.done{background:var(--accent-dim);}
+
+.figure-wrap{position:relative; width:180px; height:210px; margin:8px 0; display:flex; align-items:center; justify-content:center;}
+.figure-wrap svg{width:100%; height:100%;}
+.photo-wrap{position:relative; margin:8px auto; border-radius:16px; overflow:hidden; background:#000;}
+.photo-wrap img{width:100%; height:100%; object-fit:cover; display:block;}
+
+/* ---- STORYBOARD "Ejercicios de hoy" ---- */
+.today-cards-title{font-weight:800; font-size:15px; margin:22px 0 12px;}
+.today-card{background:var(--bg-elev); border-radius:var(--radius); padding:14px; margin-bottom:14px; display:flex; gap:12px;}
+.today-card-num{font-family:var(--font-display); font-size:22px; color:var(--accent); width:26px; flex-shrink:0;}
+.today-card-body{flex:1; min-width:0;}
+.today-card-name{font-weight:800; font-size:15px; margin-bottom:4px;}
+.today-card-meta{font-size:12.5px; color:var(--accent); font-weight:700; margin-bottom:2px;}
+.today-card-group{font-size:11.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:12px;}
+.today-card-frames{display:flex; align-items:center; gap:2px;}
+.today-frame{flex:1; min-width:0; background:radial-gradient(circle at 50% 38%, var(--bg-elev2) 0%, var(--bg) 100%); border-radius:12px; padding:6px 2px 8px; text-align:center;}
+.today-frame .figure-wrap{width:100% !important; height:104px !important; margin:0 auto;}
+.today-frame-cap{font-size:10px; color:var(--text-dim); margin-top:2px; line-height:1.25; font-weight:600;}
+.today-frame-arrow{color:var(--text-faint); font-size:15px; flex-shrink:0; width:12px;}
+.today-card-body .photo-wrap{width:100% !important; height:160px !important; margin:2px 0 0;}
+
+/* ---- AUTO-CONFIRM de repeticiones (sin toques obligatorios) ---- */
+.confirm-ring{position:relative; width:76px; height:76px; margin:6px auto 18px;}
+.confirm-ring svg{width:100%; height:100%; transform:rotate(-90deg);}
+.confirm-ring-bg{fill:none; stroke:var(--bg-elev2); stroke-width:6;}
+.confirm-ring-fg{fill:none; stroke:var(--up); stroke-width:6; stroke-linecap:round; stroke-dasharray:219.9; transition:stroke-dashoffset 1s linear;}
+.confirm-ring-num{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:22px; color:var(--up);}
+.confirm-reps-row{display:flex; align-items:center; gap:18px; margin:10px 0 6px;}
+.confirm-adj-btn{width:56px; height:56px; border-radius:50%; background:var(--bg-elev2); color:var(--text); font-size:26px; font-weight:800; display:flex; align-items:center; justify-content:center;}
+.confirm-reps-num{font-family:var(--font-display); font-size:56px; color:var(--accent); min-width:90px; text-align:center;}
+.confirm-hint{font-size:12px; color:var(--text-faint); margin-bottom:8px;}
+.auto-note{font-size:11.5px; color:var(--text-faint); margin-top:14px;}
+.session-controls{position:absolute; top:calc(14px + env(safe-area-inset-top)); left:14px; right:14px; z-index:5; display:flex; justify-content:space-between;}
+.pause-btn{width:38px; height:38px; border-radius:10px; background:var(--bg-elev); color:var(--text-dim); font-size:15px; display:flex; align-items:center; justify-content:center;}
+.pause-btn.active{background:var(--accent); color:#0C0D10;}
+.end-btn{width:38px; height:38px; border-radius:10px; background:var(--bg-elev); color:var(--danger); font-size:15px; display:flex; align-items:center; justify-content:center;}
+
+/* ---- Selector de ritmo (Settings) ---- */
+.pace-picker{display:flex; gap:8px;}
+.pace-btn{flex:1; padding:12px 6px; border-radius:10px; background:var(--bg-elev2); color:var(--text); font-weight:700; font-size:13px; text-align:center;}
+.pace-btn.active{background:var(--accent); color:#0C0D10;}
+.sync-code-row{display:flex; align-items:center; gap:8px; background:var(--bg-elev2); border-radius:10px; padding:10px 12px;}
+.sync-code{flex:1; font-family:var(--font-mono, monospace); font-size:12px; color:var(--accent); word-break:break-all;}
+.sync-copy-btn{flex-shrink:0; padding:8px 12px; font-size:12.5px;}
+.sync-link-row{display:flex; gap:8px; margin-top:6px;}
+.sync-code-input{flex:1; background:var(--bg-elev2); border:1px solid var(--border, #2A2C31); border-radius:10px; padding:10px 12px; color:var(--text); font-size:13px;}
+.sync-msg{font-size:12.5px; margin-top:8px;}
+.sync-ok{color:var(--up);}
+.sync-err{color:var(--danger);}
+.circuit-progress{display:flex; gap:6px; margin:2px 0 4px; justify-content:center;}
+.circuit-dot{width:26px; height:5px; border-radius:3px; background:var(--bg-elev2);}
+.circuit-dot.done{background:var(--accent);}
+.circuit-dot.current{background:var(--up);}
+.round-badge{display:inline-block; background:var(--bg-elev2); color:var(--text-dim); font-size:11px; font-weight:800; padding:5px 12px; border-radius:20px; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.03em;}
+.target-chips{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:14px 0 8px;}
+.chip{background:var(--bg-elev); padding:8px 14px; border-radius:20px; font-size:13px; font-weight:600; color:var(--text-dim);}
+.chip-emphasis{background:var(--accent); color:#0C0D10; font-weight:800;}
+.exercise-cue{color:var(--text-dim); font-size:13.5px; line-height:1.5; max-width:320px; margin:4px auto 8px; background:var(--bg-elev); padding:12px 14px; border-radius:var(--radius-sm);}
+.level-hint{color:var(--text-faint); font-size:12px; margin-top:12px;}
+
+.reps-input{width:140px; font-family:var(--font-display); font-size:48px; text-align:center; background:var(--bg-elev); color:var(--accent); border:2px solid var(--bg-elev2); border-radius:var(--radius-sm); padding:12px; margin:12px 0 4px;}
+.reps-input:focus{outline:none; border-color:var(--accent);}
+.target-hint{color:var(--text-faint); font-size:13px; margin-bottom:20px;}
+.rpe-label{font-size:13px; color:var(--text-dim); margin-bottom:10px; font-weight:600;}
+.rpe-scale{display:flex; gap:6px; margin-bottom:6px;}
+.rpe-btn{width:38px; height:38px; border-radius:10px; background:var(--bg-elev); color:var(--text); font-weight:700; font-size:14px;}
+.rpe-btn.active{background:var(--accent); color:#0C0D10;}
+.rpe-legend{display:flex; justify-content:space-between; width:100%; max-width:290px; font-size:10px; color:var(--text-faint); margin-bottom:20px; text-transform:uppercase; letter-spacing:0.05em;}
+
+/* ---- SUMMARY ---- */
+.summary h1{font-size:28px; margin-bottom:20px;}
+.summary-block{background:var(--bg-elev); border-radius:var(--radius-sm); padding:16px; margin-bottom:12px; text-align:left;}
+.summary-title{font-weight:700; font-size:14px; margin-bottom:10px; color:var(--text-dim);}
+.summary-row{display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-top:1px solid var(--bg-elev2);}
+.summary-row:first-of-type{border-top:none;}
+.badge{font-size:12px; font-weight:700; padding:4px 10px; border-radius:20px;}
+.badge-up{background:rgba(200,255,61,0.15); color:var(--accent);}
+.badge-down{background:rgba(255,107,74,0.15); color:var(--danger);}
+
+/* ---- PROGRESS ---- */
+.sub-header{display:flex; align-items:center; gap:14px; margin-bottom:20px;}
+.sub-header h1{font-size:22px;}
+.progress-group{margin-bottom:20px;}
+.group-title{font-size:13px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;}
+.level-track-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--bg-elev);}
+.level-track-name{font-size:14px;}
+.level-track{display:flex; gap:4px;}
+.level-pip{width:14px; height:6px; border-radius:3px; background:var(--bg-elev2);}
+.level-pip.filled{background:var(--accent);}
+.history-list{margin-top:8px;}
+.history-row{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--bg-elev); font-size:13px;}
+.history-date{color:var(--text-faint);}
+
+/* ---- SETTINGS ---- */
+.settings-block{background:var(--bg-elev); border-radius:var(--radius-sm); padding:18px; margin-bottom:14px;}
+.settings-label{font-weight:700; font-size:14px; margin-bottom:12px;}
+.week-picker{display:flex; gap:8px; margin-bottom:10px;}
+.week-btn{flex:1; padding:12px; border-radius:10px; background:var(--bg-elev2); color:var(--text); font-weight:700;}
+.week-btn.active{background:var(--accent); color:#0C0D10;}
+.settings-hint{font-size:12px; color:var(--text-faint); line-height:1.5; margin-top:6px;}
+.settings-toggle-row{display:flex; justify-content:space-between; align-items:center;}
+.switch{width:46px; height:26px; border-radius:20px; background:var(--bg-elev2); position:relative; flex-shrink:0;}
+.switch.on{background:var(--accent);}
+.switch-knob{position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:var(--text); transition:transform .15s ease;}
+.switch.on .switch-knob{transform:translateX(20px); background:#0C0D10;}
+
+@media (prefers-reduced-motion: reduce){
+  .figure-wrap svg{animation:none !important;}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+    "htm": "https://esm.sh/htm@3.1.1"
+  }
+}
+</script>
+
+<script type="module">
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
+import htm from 'htm';
+const h = React.createElement;
+const html = htm.bind(h);
+
+// =====================================================================
+// SOUND — Web Audio API, síntesis pura (offline, sin ficheros)
+// Nota iOS: si el interruptor físico de silencio está activado, Safari
+// silencia el audio de las páginas web (incluida esta instalada como app).
+// Es una restricción del sistema operativo, no de la aplicación.
+// =====================================================================
+const Sound = (() => {
+  let ctx = null;
+  function getCtx() {
+    if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; ctx = new AC(); }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+  function tone(freq, duration, opts = {}) {
+    const { type = 'sine', gain = 0.18, delay = 0 } = opts;
+    const c = getCtx();
+    const osc = c.createOscillator();
+    const g = c.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, c.currentTime + delay);
+    g.gain.setValueAtTime(0, c.currentTime + delay);
+    g.gain.linearRampToValueAtTime(gain, c.currentTime + delay + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + delay + duration);
+    osc.connect(g).connect(c.destination);
+    osc.start(c.currentTime + delay);
+    osc.stop(c.currentTime + delay + duration + 0.02);
+  }
+  return {
+    unlock() { try { getCtx(); } catch (e) {} },
+    playSetStart() { tone(520, 0.09, { type: 'triangle', gain: 0.2 }); tone(780, 0.11, { type: 'triangle', gain: 0.16, delay: 0.09 }); },
+    playSetEnd() { tone(660, 0.12, { gain: 0.18 }); tone(440, 0.16, { gain: 0.15, delay: 0.1 }); },
+    playCountdownBeep(isLast) { tone(isLast ? 880 : 600, isLast ? 0.22 : 0.09, { type: 'square', gain: isLast ? 0.22 : 0.14 }); },
+    playRestEnd() { tone(700, 0.09, { type: 'triangle', gain: 0.2 }); tone(1000, 0.14, { type: 'triangle', gain: 0.18, delay: 0.1 }); },
+    playRoundEnd() { tone(392, 0.14, { type: 'sawtooth', gain: 0.14 }); tone(523, 0.16, { type: 'sawtooth', gain: 0.16, delay: 0.12 }); },
+    playExerciseComplete() { tone(523, 0.1, { gain: 0.16 }); tone(659, 0.1, { gain: 0.16, delay: 0.1 }); tone(784, 0.18, { gain: 0.18, delay: 0.2 }); },
+    playSessionComplete() { [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.2, { type: 'triangle', gain: 0.2, delay: i * 0.13 })); },
+    playWorkStart() { tone(330, 0.08, { type: 'sawtooth', gain: 0.16 }); tone(494, 0.12, { type: 'sawtooth', gain: 0.14, delay: 0.08 }); },
+    playConfirmOpen() { tone(880, 0.06, { type: 'sine', gain: 0.14 }); tone(1174, 0.09, { type: 'sine', gain: 0.12, delay: 0.06 }); },
+    playAdjustTick() { tone(1046, 0.045, { type: 'square', gain: 0.09 }); },
+    playAutoLogged() { tone(587, 0.08, { type: 'triangle', gain: 0.15 }); tone(880, 0.12, { type: 'triangle', gain: 0.16, delay: 0.07 }); },
+    playHypoStep() { tone(349, 0.16, { type: 'sine', gain: 0.14 }); tone(523, 0.18, { type: 'sine', gain: 0.13, delay: 0.1 }); },
+  };
+})();
+let soundsOn = true;
+function playIfOn(fn) { if (soundsOn) fn(); }
+
+// =====================================================================
+// DATA — hombre 55 años, 165cm, ~70kg, nivel AVANZADO.
+// Peso corporal + mancuernas 2kg. Ciclo de 4 semanas SIN fase de
+// adaptación (ya entrena a diario): arranca directo en Volumen.
+// =====================================================================
+const PHASES = {
+  1: { name: 'Volumen',    color: '#C8FF3D', desc: 'Base de trabajo del mes: más repeticiones, técnica sólida bajo fatiga moderada. RPE objetivo 7.', seriesMult: 1.0, repsMult: 1.0,  restSec: 40 },
+  2: { name: 'Fuerza',     color: '#7DD8FF', desc: 'Menos repeticiones, más descanso, variantes más exigentes. RPE objetivo 7-8.',                     seriesMult: 1.0, repsMult: 0.85, restSec: 55 },
+  3: { name: 'Intensidad', color: '#FF6B4A', desc: 'Descansos cortos, máxima densidad de trabajo. RPE objetivo 8-9.',                                   seriesMult: 1.1, repsMult: 1.1,  restSec: 25 },
+  4: { name: 'Descarga',   color: '#9AA0AC', desc: 'Recuperación activa. Volumen -35%, prioridad a la técnica antes de subir de nuevo la exigencia.',   seriesMult: 0.65,repsMult: 0.8,  restSec: 45 },
+};
+
+const EXERCISES = [
+  { id: 'sq_01', name: 'Sentadilla asistida (silla)',        group: 'inferior', level: 1, baseReps: 12, baseSeries: 3, tempo: '2-0-2', icon: 'chair', equip: 'peso corporal', cue: 'Pies a la anchura de hombros, baja hasta rozar el asiento, empuja con talones al subir.' },
+  { id: 'sq_02', name: 'Sentadilla peso corporal',           group: 'inferior', level: 2, baseReps: 15, baseSeries: 3, tempo: '2-0-1', icon: 'squat', equip: 'peso corporal', cue: 'Rodillas siguen la línea de los pies, pecho arriba, baja hasta 90° de rodilla.' },
+  { id: 'sq_03', name: 'Sentadilla goblet con mancuerna',    group: 'inferior', level: 3, baseReps: 12, baseSeries: 4, tempo: '3-0-1', icon: 'squat', equip: 'mancuernas', weight: 2, cue: 'Sujeta la mancuerna vertical pegada al pecho con ambas manos. Baja controlado 3s, sube fuerte.' },
+  { id: 'sq_04', name: 'Sentadilla búlgara con mancuernas',  group: 'inferior', level: 4, baseReps: 10, baseSeries: 4, tempo: '2-0-1', icon: 'lunge', equip: 'mancuernas', weight: 2, cue: 'Pie trasero elevado en silla, una mancuerna en cada mano. Baja recto, rodilla delantera no sobrepasa la punta del pie.' },
+  { id: 'sq_05', name: 'Sentadilla a una pierna (asistida)', group: 'inferior', level: 5, baseReps: 6,  baseSeries: 4, tempo: '3-1-1', icon: 'pistol', equip: 'peso corporal', cue: 'Sujeta un punto de apoyo con una mano para equilibrio. Baja controlado a una pierna.' },
+  { id: 'lu_01', name: 'Zancada estática',                   group: 'inferior', level: 2, baseReps: 10, baseSeries: 3, tempo: '2-0-1', icon: 'lunge', equip: 'peso corporal', cue: 'Paso largo, baja hasta que ambas rodillas formen 90°. Tronco vertical.' },
+  { id: 'lu_02', name: 'Zancada caminando con mancuernas',   group: 'inferior', level: 3, baseReps: 12, baseSeries: 3, tempo: '2-0-1', icon: 'lunge', equip: 'mancuernas', weight: 2, cue: 'Una mancuerna en cada mano a los lados. Zancadas alternas avanzando, controla la rodilla delantera.' },
+  { id: 'lu_03', name: 'Zancada búlgara alterna',            group: 'inferior', level: 4, baseReps: 10, baseSeries: 3, tempo: '2-0-1', icon: 'lunge', equip: 'peso corporal', cue: 'Sin salto (protege rodilla a los 55): alterna pierna delantera cada repetición con control.' },
+  { id: 'hip_01', name: 'Puente de glúteo',                  group: 'inferior', level: 1, baseReps: 15, baseSeries: 3, tempo: '2-1-1', icon: 'bridge', equip: 'peso corporal', cue: 'Empuja con talones, aprieta glúteo arriba 1s antes de bajar.' },
+  { id: 'hip_02', name: 'Puente de glúteo con mancuerna',    group: 'inferior', level: 3, baseReps: 12, baseSeries: 3, tempo: '2-1-1', icon: 'bridge', equip: 'mancuernas', weight: 2, cue: 'Mancuerna apoyada sobre la cadera, sujeta con ambas manos. Sube y aprieta glúteo arriba.' },
+  { id: 'hip_03', name: 'Peso muerto a una pierna con mancuerna', group: 'inferior', level: 4, baseReps: 8, baseSeries: 3, tempo: '3-0-1', icon: 'rdl', equip: 'mancuernas', weight: 2, cue: 'Mancuerna en la mano contraria a la pierna de apoyo. Bisagra de cadera, espalda recta.' },
+  { id: 'calf_01', name: 'Elevación de talones con mancuernas', group: 'inferior', level: 2, baseReps: 20, baseSeries: 3, tempo: '1-1-1', icon: 'calf', equip: 'mancuernas', weight: 2, cue: 'Mancuernas a los lados, sube en punta de pies, pausa 1s arriba, baja controlado.' },
+  { id: 'wall_01', name: 'Silla contra pared (isométrico)',  group: 'inferior', level: 2, baseReps: 35, baseSeries: 3, tempo: 'iso', isTimeBased: true, icon: 'chair', equip: 'peso corporal', cue: 'Espalda pegada a la pared, rodillas a 90°. Aguanta respirando de forma controlada.' },
+
+  { id: 'pu_01', name: 'Flexión inclinada (manos elevadas)', group: 'superior_empuje', level: 1, baseReps: 10, baseSeries: 3, tempo: '2-0-1', icon: 'pushup', equip: 'peso corporal', cue: 'Manos en una superficie elevada (mesa/banco). Cuerpo recto, baja el pecho hacia las manos.' },
+  { id: 'pu_02', name: 'Flexión de rodillas',                group: 'superior_empuje', level: 2, baseReps: 12, baseSeries: 3, tempo: '2-0-1', icon: 'pushup', equip: 'peso corporal', cue: 'Rodillas apoyadas, cadera-hombro-rodilla en línea. Codos a 45° del cuerpo.' },
+  { id: 'pu_03', name: 'Flexión estándar',                   group: 'superior_empuje', level: 3, baseReps: 12, baseSeries: 4, tempo: '2-0-1', icon: 'pushup', equip: 'peso corporal', cue: 'Cuerpo recto de cabeza a talones. Baja hasta rozar el pecho, empuja fuerte.' },
+  { id: 'press_01', name: 'Press de hombro con mancuernas (sentado)', group: 'superior_empuje', level: 3, baseReps: 10, baseSeries: 3, tempo: '2-0-1', icon: 'press', equip: 'mancuernas', weight: 2, cue: 'Sentado, mancuernas a la altura del hombro, empuja arriba sin bloquear codo del todo.' },
+  { id: 'fly_01', name: 'Aperturas de pecho con mancuernas (suelo)', group: 'superior_empuje', level: 3, baseReps: 12, baseSeries: 3, tempo: '3-0-1', icon: 'fly', equip: 'mancuernas', weight: 2, cue: 'Tumbado, brazos abiertos con ligera flexión de codo, baja controlado, sube juntando.' },
+  { id: 'dip_01', name: 'Fondos en silla',                   group: 'superior_empuje', level: 3, baseReps: 10, baseSeries: 3, tempo: '2-0-1', icon: 'dip', equip: 'peso corporal', cue: 'Manos en el borde de la silla, piernas extendidas. Baja hasta 90° de codo, sin hundir hombros.' },
+  { id: 'pike_01', name: 'Flexión pike (hombro)',            group: 'superior_empuje', level: 4, baseReps: 8,  baseSeries: 3, tempo: '2-0-1', icon: 'pike', equip: 'peso corporal', cue: 'Cadera elevada en V invertida. Baja la cabeza entre las manos, empuja de vuelta arriba.' },
+  { id: 'lat_01', name: 'Elevaciones laterales con mancuernas', group: 'superior_empuje', level: 2, baseReps: 12, baseSeries: 3, tempo: '2-0-2', icon: 'lateral', equip: 'mancuernas', weight: 2, cue: 'Brazos a los lados, sube hasta la altura del hombro con ligera flexión de codo. Sin impulso.' },
+
+  { id: 'row_01', name: 'Remo invertido (mesa)',             group: 'superior_traccion', level: 2, baseReps: 10, baseSeries: 3, tempo: '2-0-1', icon: 'row', equip: 'peso corporal', cue: 'Cuerpo bajo la mesa, agarra el borde, tira del pecho hacia arriba manteniendo el cuerpo recto.' },
+  { id: 'row_02', name: 'Remo a una mano con mancuerna',     group: 'superior_traccion', level: 3, baseReps: 10, baseSeries: 3, tempo: '2-0-1', icon: 'row', equip: 'mancuernas', weight: 2, cue: 'Apoyo con una mano en silla/mesa, tira de la mancuerna hacia la cadera, codo pegado al cuerpo.' },
+  { id: 'row_03', name: 'Superman',                          group: 'superior_traccion', level: 1, baseReps: 12, baseSeries: 3, tempo: '2-1-1', icon: 'superman', equip: 'peso corporal', cue: 'Tumbado boca abajo, eleva brazos y piernas a la vez, aprieta lumbar y glúteo.' },
+  { id: 'ytw_01', name: 'Y-T-W prono con mancuernas ligeras', group: 'superior_traccion', level: 2, baseReps: 10, baseSeries: 3, tempo: '2-1-1', icon: 'ytw', equip: 'mancuernas', weight: 2, cue: 'Tumbado boca abajo, dibuja las letras Y-T-W elevando los brazos. Fortalece espalda alta y postura.' },
+  { id: 'retract_01', name: 'Retracción escapular',          group: 'superior_traccion', level: 1, baseReps: 15, baseSeries: 3, tempo: '1-1-1', icon: 'scapula', equip: 'peso corporal', cue: 'Junta los omóplatos hacia atrás y abajo, sin encoger hombros.' },
+
+  { id: 'plank_01', name: 'Plancha frontal',                 group: 'core', level: 2, baseReps: 35, baseSeries: 3, tempo: 'iso', isTimeBased: true, icon: 'plank', equip: 'peso corporal', cue: 'Línea recta cabeza-talón, abdomen y glúteo activos, no dejes caer la cadera.' },
+  { id: 'plank_02', name: 'Plancha lateral',                 group: 'core', level: 3, baseReps: 25, baseSeries: 3, tempo: 'iso', isTimeBased: true, icon: 'sideplank', equip: 'peso corporal', cue: 'Apoyo en antebrazo, cuerpo recto de lado, cadera elevada, no rotes el tronco.' },
+  { id: 'bird_01', name: 'Bird Dog',                         group: 'core', level: 1, baseReps: 10, baseSeries: 3, tempo: '2-1-1', icon: 'birddog', equip: 'peso corporal', cue: 'Brazo y pierna contraria extendidos, cadera estable, sin rotar el tronco.' },
+  { id: 'deadbug_01', name: 'Dead Bug',                      group: 'core', level: 2, baseReps: 10, baseSeries: 3, tempo: '2-1-1', icon: 'deadbug', equip: 'peso corporal', cue: 'Tumbado, baja brazo y pierna contraria a la vez sin despegar la lumbar del suelo.' },
+  { id: 'legraise_01', name: 'Elevación de piernas',         group: 'core', level: 3, baseReps: 12, baseSeries: 3, tempo: '2-0-1', icon: 'legraise', equip: 'peso corporal', cue: 'Tumbado, piernas rectas, sube hasta 90° sin despegar la zona lumbar del suelo.' },
+  { id: 'mtnclimb_01', name: 'Mountain Climbers',            group: 'core', level: 3, baseReps: 24, baseSeries: 3, tempo: 'X-0-X', icon: 'climber', equip: 'peso corporal', cue: 'En posición de plancha, lleva rodillas al pecho alternando rápido, cadera estable.' },
+  { id: 'hollow_01', name: 'Hollow Hold',                    group: 'core', level: 4, baseReps: 25, baseSeries: 3, tempo: 'iso', isTimeBased: true, icon: 'hollow', equip: 'peso corporal', cue: 'Tumbado, lumbar pegada al suelo, brazos y piernas ligeramente elevados formando una "U".' },
+  { id: 'russtwist_01', name: 'Giro ruso con mancuerna',     group: 'core', level: 3, baseReps: 20, baseSeries: 3, tempo: '1-0-1', icon: 'twist', equip: 'mancuernas', weight: 2, cue: 'Sentado, tronco inclinado atrás 45°, gira la mancuerna de lado a lado tocando el suelo.' },
+
+  { id: 'jj_01', name: 'Jumping Jacks',                      group: 'cardio', level: 1, baseReps: 30, baseSeries: 3, tempo: 'X-0-X', icon: 'jj', equip: 'peso corporal', cue: 'Salta abriendo piernas y brazos a la vez, aterriza suave con rodillas ligeramente flexionadas.' },
+  { id: 'hik_01', name: 'High Knees (rodillas al pecho)',    group: 'cardio', level: 2, baseReps: 30, baseSeries: 3, tempo: 'X-0-X', icon: 'highknee', equip: 'peso corporal', cue: 'Corre en el sitio llevando rodillas a la altura de la cadera, ritmo alto pero controlado.' },
+  { id: 'skater_01', name: 'Skater Jumps (sin impacto)',     group: 'cardio', level: 3, baseReps: 16, baseSeries: 3, tempo: 'X-0-X', icon: 'skater', equip: 'peso corporal', cue: 'Salto lateral aterrizando en una pierna, sin rebote fuerte para proteger rodilla. Alterna lados.' },
+  { id: 'stepup_01', name: 'Step-up con mancuernas',         group: 'cardio', level: 3, baseReps: 12, baseSeries: 3, tempo: '2-0-1', icon: 'stepup', equip: 'mancuernas', weight: 2, cue: 'Sube a una silla estable con una mancuerna en cada mano, alterna la pierna que inicia el movimiento.' },
+];
+
+const WEEKLY_TEMPLATE = [
+  { day: 1, name: 'Tren inferior + Core',        groups: ['inferior', 'core'] },
+  { day: 2, name: 'Empuje (pecho/hombro)',       groups: ['superior_empuje', 'core'] },
+  { day: 3, name: 'Tracción (espalda) + Cardio', groups: ['superior_traccion', 'cardio'] },
+  { day: 4, name: 'Tren inferior + Empuje',      groups: ['inferior', 'superior_empuje'] },
+  { day: 5, name: 'Tracción + Core',             groups: ['superior_traccion', 'core'] },
+  { day: 6, name: 'Full Body + Metabólico',      groups: ['inferior', 'superior_empuje', 'superior_traccion', 'cardio'] },
+];
+const EXERCISES_PER_SESSION = 6;
+const REST_DAY = 7;
+const DAY_NAMES = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+// ---- HIPOPRESIVOS — bloque final del entreno (no calentamiento) ----
+// Reduce cintura y fortalece la faja abdominal profunda (transverso, suelo pélvico).
+// Se hace al FINAL: requiere estado relajado y control respiratorio, incompatible
+// con hacerlo justo antes de cargar peso o subir la frecuencia cardiaca.
+const HYPOPRESSIVE_BLOCK = [
+  { id: 'exhale',  name: 'Espiración completa + apnea', duration: 25, cue: 'Vacía el aire por la boca hasta el final, sin volver a coger aire. Prepara la apnea espiratoria.', icon: 'reach' },
+  { id: 'vac_pie', name: 'Vacío abdominal de pie',        duration: 40, cue: 'En apnea, abre las costillas y mete el abdomen hacia dentro y arriba, como si el ombligo "subiera" hacia la columna. Aguanta sin coger aire.', icon: 'reach' },
+  { id: 'vac_cuad', name: 'Vacío abdominal en cuadrupedia', duration: 40, cue: 'A cuatro apoyos, misma apnea y vacío. La gravedad intensifica el trabajo sobre la faja abdominal profunda.', icon: 'hinge' },
+  { id: 'vac_trac', name: 'Vacío con tracción de hombros', duration: 40, cue: 'De pie, brazos elevados en tracción hacia atrás y arriba. Apnea y vacío abdominal, alargando la columna.', icon: 'reach' },
+  { id: 'vac_final', name: 'Vacío final + respiración de recuperación', duration: 30, cue: 'Última apnea con vacío, suelta despacio y respira con calma 3 ciclos completos antes de terminar.', icon: 'standing' },
+];
+
+// =====================================================================
+// ENGINE — nivel inicial avanzado (3/5), progresión reps+RPE, circuito
+// =====================================================================
+const STORAGE_KEY = 'forma55_state_v4';
+const DEFAULT_LEVEL = 3;
+
+function loadState() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+  return { startDate: new Date().toISOString().slice(0, 10), cycleWeek: 1, totalSessionsDone: 0, roundsPerDay: 2, pace: 'normal', syncCode: null, exerciseLevels: {}, history: [], sessionLog: [] };
+}
+
+// =====================================================================
+// SINCRONIZACIÓN ENTRE DISPOSITIVOS — vía jsonblob.com (almacenamiento
+// JSON público, sin cuenta ni clave). Cada perfil tiene un "código" que
+// es el ID del blob; guardar hace PUT a ese blob, y en otro dispositivo
+// se introduce el mismo código para traer (GET) ese progreso. Si un
+// código no se usa en 75 días el servicio lo borra automáticamente.
+// =====================================================================
+const SYNC_API = 'https://jsonblob.com/api/jsonBlob';
+let syncTimer = null;
+let syncing = false;
+
+async function syncCreate(state) {
+  try {
+    const res = await fetch(SYNC_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state) });
+    const loc = res.headers.get('Location') || '';
+    const id = loc.split('/').pop();
+    if (id) { state.syncCode = id; saveState(state); }
+  } catch (e) { /* sin conexión: se reintenta en el próximo cambio */ }
+}
+function syncPush(state) {
+  if (!state.syncCode) { syncCreate(state); return; }
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(async () => {
+    try { await fetch(`${SYNC_API}/${state.syncCode}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state) }); } catch (e) {}
+  }, 1200);
+}
+async function syncPull(code) {
+  const res = await fetch(`${SYNC_API}/${code.trim()}`);
+  if (!res.ok) throw new Error('Código no encontrado');
+  const remote = await res.json();
+  remote.syncCode = code.trim();
+  saveState(remote);
+  return remote;
+}
+
+function saveState(state) { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); if (!syncing) syncPush(state); }
+function getExerciseLevel(state, exerciseId, defaultLevel) {
+  const rec = state.exerciseLevels[exerciseId];
+  return rec ? rec.level : (defaultLevel != null ? defaultLevel : DEFAULT_LEVEL);
+}
+function getVolumeBonus(state, exerciseId) { const rec = state.exerciseLevels[exerciseId]; return rec ? (rec.volumeBonus || 0) : 0; }
+function getFamilyLevel(state, prefix) {
+  for (const [exId, rec] of Object.entries(state.exerciseLevels)) { if (exId.split('_')[0] === prefix) return rec.level; }
+  return DEFAULT_LEVEL;
+}
+function findVariantByLevel(baseGroupId, targetLevel) {
+  const family = EXERCISES.filter(e => e.id.split('_')[0] === baseGroupId);
+  if (!family.length) return null;
+  family.sort((a, b) => a.level - b.level);
+  let best = family[0];
+  for (const e of family) { if (e.level <= targetLevel) best = e; }
+  return best;
+}
+function computeTargetReps(exercise, phaseKey, state) {
+  const phase = PHASES[phaseKey];
+  const volBonus = getVolumeBonus(state, exercise.id);
+  return Math.round(exercise.baseReps * phase.repsMult) + volBonus * 2;
+}
+function computeTargetSeries(exercise, phaseKey) {
+  const phase = PHASES[phaseKey];
+  return Math.max(2, Math.round(exercise.baseSeries * phase.seriesMult));
+}
+// ---- Temporización automática de la serie (para que la app avance sola) ----
+const PACE_MULT = { lento: 1.28, normal: 1.0, rapido: 0.82 };
+function secondsPerRep(tempo) {
+  if (tempo === 'iso') return null;
+  return Math.max(1.4, tempo.split('-').reduce((sum, p) => sum + (p.trim().toUpperCase() === 'X' ? 0.4 : (parseFloat(p) || 1)), 0));
+}
+function computeWorkSeconds(exercise, pace) {
+  const mult = PACE_MULT[pace] || 1.0;
+  if (exercise.isTimeBased) return exercise.targetReps; // ya es un tiempo objetivo real, no se escala por ritmo
+  return Math.max(6, Math.round(exercise.targetReps * secondsPerRep(exercise.tempo) * mult));
+}
+// ---- RPE automático a partir de las reps confirmadas vs. objetivo (sin escala táctil) ----
+// Tiempo total estimado del día: N vueltas del circuito (trabajo + confirmación
+// de reps + descansos, incluido el descanso entre vueltas) + bloque hipopresivo
+// final. Usa exactamente la misma lógica que la sesión real (computeWorkSeconds,
+// CONFIRM_SECONDS, restSec de la fase), así que es una previsión fiel, no una
+// media genérica.
+function estimateDaySeconds(session, rounds, pace) {
+  const perExercise = session.exercises.reduce((sum, ex) => sum + computeWorkSeconds(ex, pace) + CONFIRM_SECONDS + ex.restSec, 0);
+  const roundTransition = session.exercises.length ? Math.round(session.exercises[0].restSec * 1.8) : 0;
+  const circuitsSeconds = perExercise * rounds + roundTransition * Math.max(0, rounds - 1);
+  const hypoSeconds = HYPOPRESSIVE_BLOCK.reduce((sum, s) => sum + s.duration, 0);
+  return circuitsSeconds + hypoSeconds;
+}
+function fmtMinutes(totalSeconds) { return Math.round(totalSeconds / 60); }
+
+function estimateRpe(actualReps, targetReps, phaseKey) {
+  const base = { 1: 7, 2: 7.5, 3: 8.5, 4: 6 }[phaseKey] || 7;
+  const ratio = targetReps > 0 ? actualReps / targetReps : 1;
+  let rpe = base;
+  if (ratio >= 1.15) rpe = base - 1.5;
+  else if (ratio >= 1.0) rpe = base - 0.5;
+  else if (ratio >= 0.9) rpe = base;
+  else if (ratio >= 0.75) rpe = base + 1;
+  else rpe = base + 2;
+  return Math.max(3, Math.min(10, Math.round(rpe)));
+}
+function applyResult(state, exercise, setsDone, phaseKey) {
+  const targetReps = computeTargetReps(exercise, phaseKey, state);
+  const avgReps = setsDone.reduce((s, x) => s + x.reps, 0) / setsDone.length;
+  const avgRpe = setsDone.reduce((s, x) => s + x.rpe, 0) / setsDone.length;
+  const levelBefore = getExerciseLevel(state, exercise.id, exercise.level);
+  const volBefore = getVolumeBonus(state, exercise.id);
+  let levelAfter = levelBefore, volAfter = volBefore;
+  const pctOfTarget = avgReps / targetReps;
+  const familyPrefix = exercise.id.split('_')[0];
+  if (pctOfTarget >= 1.0 && avgRpe <= 7) {
+    const nextVariant = findVariantByLevel(familyPrefix, levelBefore + 1);
+    if (nextVariant && nextVariant.level > levelBefore) { levelAfter = nextVariant.level; volAfter = 0; }
+    else { volAfter = volBefore + 1; }
+  } else if (pctOfTarget < 0.75 || avgRpe >= 9) {
+    const prevVariant = findVariantByLevel(familyPrefix, levelBefore - 1);
+    if (prevVariant && prevVariant.level < levelBefore) levelAfter = prevVariant.level;
+    volAfter = 0;
+  } else { volAfter = volBefore + 1; }
+  state.exerciseLevels[exercise.id] = { level: levelAfter, volumeBonus: volAfter };
+  state.history.push({ date: new Date().toISOString(), phase: phaseKey, exerciseId: exercise.id, setsDone, levelBefore, levelAfter });
+  saveState(state);
+  return { levelBefore, levelAfter, progressed: levelAfter > levelBefore, regressed: levelAfter < levelBefore };
+}
+function pickExercisesForTemplate(state, template) {
+  const picked = []; const groups = template.groups; let gi = 0; const usedIds = new Set(); let guard = 0;
+  while (picked.length < EXERCISES_PER_SESSION && guard < 40) {
+    guard++;
+    const group = groups[gi % groups.length];
+    const candidates = EXERCISES.filter(e => e.group === group && !usedIds.has(e.id.split('_')[0]));
+    if (candidates.length) {
+      const familyPrefixes = [...new Set(candidates.map(e => e.id.split('_')[0]))];
+      const prefix = familyPrefixes[picked.length % familyPrefixes.length];
+      const effectiveLevel = getFamilyLevel(state, prefix);
+      const variant = findVariantByLevel(prefix, effectiveLevel) || candidates[0];
+      picked.push(variant); usedIds.add(prefix);
+    }
+    gi++;
+  }
+  return picked;
+}
+function generateSession(state) {
+  const jsDay = new Date().getDay(); const isoDay = jsDay === 0 ? 7 : jsDay;
+  let template = WEEKLY_TEMPLATE.find(t => t.day === isoDay);
+  if (!template) template = WEEKLY_TEMPLATE[state.totalSessionsDone % WEEKLY_TEMPLATE.length];
+  const phaseKey = state.cycleWeek; const phase = PHASES[phaseKey];
+  const picked = pickExercisesForTemplate(state, template);
+  const exercisesWithTargets = picked.map(ex => ({ ...ex, targetReps: computeTargetReps(ex, phaseKey, state), targetSeries: computeTargetSeries(ex, phaseKey), restSec: phase.restSec }));
+  return { templateName: template.name, phaseKey, phase, exercises: exercisesWithTargets };
+}
+function getWeeklyPlan(state) {
+  const phaseKey = state.cycleWeek; const phase = PHASES[phaseKey];
+  return WEEKLY_TEMPLATE.map(template => {
+    const picked = pickExercisesForTemplate(state, template);
+    return { day: template.day, name: template.name, exercises: picked.map(ex => ({ ...ex, targetReps: computeTargetReps(ex, phaseKey, state), targetSeries: computeTargetSeries(ex, phaseKey), restSec: phase.restSec })) };
+  });
+}
+function completeSession(state, roundsCompleted) {
+  state.totalSessionsDone += 1;
+  state.sessionLog.push({ date: new Date().toISOString(), rounds: roundsCompleted, phase: state.cycleWeek });
+  if (state.totalSessionsDone % 6 === 0) state.cycleWeek = state.cycleWeek >= 4 ? 1 : state.cycleWeek + 1;
+  saveState(state);
+}
+
+// =====================================================================
+// FIGURA — silueta humana anatómica masculina, animada por cinemática
+// de articulaciones (hombro/codo/cadera/rodilla), no monigote de líneas.
+// Colores vistosos por segmento (torso lima, brazos cian, piernas coral)
+// para que el movimiento se lea a simple vista. Sin fotos de terceros
+// (evita derechos de autor); es un punto de integración listo para
+// sustituir por vídeo real si se produce contenido propio más adelante.
+// =====================================================================
+const ICON_TO_POSE = {
+  squat: 'squat', chair: 'squat', wall: 'squat',
+  pistol: 'pistol', jump: 'cardio', calf: 'calf',
+  lunge: 'lunge', skater: 'cardio', stepup: 'stepup',
+  pushup: 'push_floor', dip: 'dip', pike: 'pike',
+  press: 'raise_arms', fly: 'raise_arms', lateral: 'raise_arms',
+  row: 'pull_prone', ytw: 'ytw', scapula: 'pull_prone',
+  superman: 'bridge', bridge: 'bridge',
+  rdl: 'hinge',
+  plank: 'plank', sideplank: 'plank', hollow: 'plank',
+  climber: 'climber',
+  birddog: 'quadruped', deadbug: 'deadbug',
+  legraise: 'legraise', twist: 'twist', crunch: 'crunch',
+  jj: 'cardio', highknee: 'cardio', burpee: 'cardio',
+  reach: 'vacuum', hinge: 'hinge', standing: 'vacuum',
+};
+
+const FIG = { vb: 120, vh: 150, hipY: 100, shY: 46, headR: 13, thigh: 34, shin: 32, uarm: 24, farm: 22, hipDx: 11, shDx: 17 };
+const COL = { body: '#C8FF3D', bodyDark: '#8FBF2B', arm: '#7DD8FF', armDark: '#4FA9C9', leg: '#FF6B4A', legDark: '#D2492E' };
+
+function fkPoint(ox, oy, len1, a1, len2, a2) {
+  const r1 = a1 * Math.PI / 180, r2 = (a1 + a2) * Math.PI / 180;
+  const mx = ox + len1 * Math.sin(r1), my = oy + len1 * Math.cos(r1);
+  const ex = mx + len2 * Math.sin(r2), ey = my + len2 * Math.cos(r2);
+  return { mx, my, ex, ey };
+}
+function lerp(a, b, t) { return a + (b - a) * t; }
+function pairL(a, b, t) { return [lerp(a[0], b[0], t), lerp(a[1], b[1], t)]; }
+function bp(over) { return Object.assign({ torso: 0, dy: 0, orient: 0, legL: [6, 4], legR: [6, 4], armL: [12, 4], armR: [12, 4] }, over); }
+
+const FIG_POSES = {
+  squat:       { A: bp({ legL: [8, 6], legR: [8, 6], torso: 6, armL: [78, -100], armR: [78, -100] }), B: bp({ legL: [54, 100], legR: [54, 100], torso: 26, dy: 20, armL: [82, -135], armR: [82, -135] }) },
+  pistol:      { A: bp({ legL: [8, 6], legR: [2, 2], torso: 8, armL: [70, 0], armR: [70, 0] }), B: bp({ legL: [58, 105], legR: [-10, 4], torso: 30, dy: 18, armL: [88, -20], armR: [88, -20] }) },
+  lunge:       { A: bp({ legL: [4, 2], legR: [4, 2], torso: 6, armL: [15, 0], armR: [150, 15] }), B: bp({ legL: [-22, 18], legR: [122, 88], torso: 10, dy: 10, armL: [150, 15], armR: [15, 0] }) },
+  stepup:      { A: bp({ legL: [6, 0], legR: [6, 0], armL: [10, 0], armR: [10, 0] }), B: bp({ legL: [70, 110], legR: [4, 0], armL: [135, -15], armR: [10, 0], dy: -10 }) },
+  push_floor:  { A: bp({ orient: 90, legL: [6, 0], legR: [6, 0], armL: [70, -15], armR: [70, -15] }), B: bp({ orient: 90, legL: [6, 0], legR: [6, 0], armL: [70, -95], armR: [70, -95], dy: 8 }) },
+  dip:         { A: bp({ armL: [150, 55], armR: [150, 55], torso: -6 }), B: bp({ armL: [170, 105], armR: [170, 105], torso: -10, dy: 8 }) },
+  pike:        { A: bp({ orient: 90, legL: [6, 0], legR: [6, 0], armL: [75, -30], armR: [75, -30], torso: 40, dy: 6 }), B: bp({ orient: 90, legL: [6, 0], legR: [6, 0], armL: [75, -90], armR: [75, -90], torso: 40, dy: -4 }) },
+  plank:       { A: bp({ orient: 90, legL: [6, 0], legR: [6, 0], armL: [80, -95], armR: [80, -95] }), B: bp({ orient: 90, legL: [6, 0], legR: [6, 0], armL: [80, -95], armR: [80, -95], dy: 3, torso: 2 }) },
+  climber:     { A: bp({ orient: 90, legL: [6, 0], legR: [65, 110], armL: [80, -95], armR: [80, -95] }), B: bp({ orient: 90, legL: [65, 110], legR: [6, 0], armL: [80, -95], armR: [80, -95] }) },
+  raise_arms:  { A: bp({ armL: [95, -165], armR: [95, -165] }), B: bp({ armL: [15, -10], armR: [15, -10] }) },
+  pull_prone:  { A: bp({ orient: 90, legL: [6, 0], legR: [6, 0], armL: [35, 0], armR: [35, 0] }), B: bp({ orient: 90, legL: [6, 0], legR: [6, 0], armL: [130, -25], armR: [130, -25], torso: -8, dy: -6 }) },
+  ytw:         { A: bp({ orient: 90, legL: [6, 0], legR: [6, 0], armL: [100, 0], armR: [100, 0] }), B: bp({ orient: 90, legL: [6, 0], legR: [6, 0], armL: [155, -10], armR: [155, -10], dy: -5 }) },
+  bridge:      { A: bp({ orient: 90, legL: [65, 85], legR: [65, 85], armL: [10, 0], armR: [10, 0] }), B: bp({ orient: 90, legL: [65, 85], legR: [65, 85], armL: [150, 0], armR: [150, 0], torso: -18, dy: -14 }) },
+  quadruped:   { A: bp({ orient: 90, legL: [45, 95], legR: [45, 95], armL: [70, 0], armR: [70, 0] }), B: bp({ orient: 90, legL: [-10, 95], legR: [45, 95], armL: [150, 0], armR: [70, 0], torso: 6, dy: 4 }) },
+  deadbug:     { A: bp({ orient: -90, legL: [70, 90], legR: [70, 90], armL: [90, -90], armR: [90, -90] }), B: bp({ orient: -90, legL: [20, 10], legR: [70, 90], armL: [20, 0], armR: [90, -90], dy: -4 }) },
+  legraise:    { A: bp({ orient: -90, legL: [8, 0], legR: [8, 0], armL: [8, 0], armR: [8, 0] }), B: bp({ orient: -90, legL: [95, 10], legR: [95, 10], armL: [8, 0], armR: [8, 0] }) },
+  crunch:      { A: bp({ orient: -90, legL: [60, 90], legR: [60, 90], armL: [70, -90], armR: [70, -90] }), B: bp({ orient: -90, legL: [60, 90], legR: [60, 90], armL: [70, -90], armR: [70, -90], torso: 18, dy: -4 }) },
+  twist:       { A: bp({ legL: [70, 90], legR: [70, 90], torso: 22, armL: [70, -90], armR: [70, -90] }), B: bp({ legL: [70, 90], legR: [70, 90], torso: -22, armL: [70, -90], armR: [70, -90] }) },
+  hinge:       { A: bp({ torso: 8, armL: [20, 0], armR: [20, 0] }), B: bp({ torso: 62, dy: 4, armL: [75, 0], armR: [75, 0] }) },
+  calf:        { A: bp({}), B: bp({ dy: -12 }) },
+  cardio:      { A: bp({ legL: [4, 0], legR: [4, 0], armL: [12, 0], armR: [12, 0] }), B: bp({ legL: [-18, 20], legR: [35, 60], armL: [155, -15], armR: [8, 0], dy: -8 }) },
+  vacuum:      { A: bp({ armL: [100, -95], armR: [100, -95] }), B: bp({ armL: [100, -95], armR: [100, -95] }) },
+};
+
+function useFigureLoop(period, active) {
+  const [t, setT] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    const start = performance.now();
+    const id = setInterval(() => setT(((performance.now() - start) % period) / period), 55);
+    return () => clearInterval(id);
+  }, [period, active]);
+  return t;
+}
+function triWave(t) { return t < 0.5 ? t * 2 : (1 - t) * 2; }
+
+// =====================================================================
+// FOTOS REALES (dominio público / Unlicense) — free-exercise-db
+// https://github.com/yuhonas/free-exercise-db — dos fotos por ejercicio
+// (inicio/fin) que alternamos para simular ejecución real. Si el
+// ejercicio no tiene correspondencia exacta en esa base, usamos la
+// silueta animada como respaldo automático (nunca se rompe la pantalla).
+// =====================================================================
+const PHOTO_BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
+// Mapeado por ID de EJERCICIO (no por icono): cada ejercicio tiene su
+// propia foto verificada, para no repetir la misma imagen en ejercicios
+// distintos (p.ej. zancada normal vs. búlgara vs. caminando son 3 fotos
+// distintas). Si no hay una foto real que muestre exactamente ese
+// ejercicio, se omite a propósito y se usa la silueta animada.
+const EXERCISE_TO_PHOTO = {
+  sq_01: 'Chair_Squat', sq_02: 'Bodyweight_Squat', sq_03: 'Goblet_Squat',
+  sq_04: 'Split_Squat_with_Dumbbells', sq_05: 'Kettlebell_Pistol_Squat',
+  lu_01: 'Split_Squats', lu_02: 'Dumbbell_Lunges', lu_03: 'Bodyweight_Walking_Lunge',
+  hip_01: 'Butt_Lift_Bridge', hip_02: 'Barbell_Glute_Bridge',
+  calf_01: 'Standing_Dumbbell_Calf_Raise',
+  pu_01: 'Incline_Push-Up', pu_03: 'Pushups',
+  press_01: 'Dumbbell_Shoulder_Press', fly_01: 'Dumbbell_Flyes', dip_01: 'Bench_Dips',
+  lat_01: 'Side_Lateral_Raise',
+  row_01: 'Inverted_Row', row_02: 'One-Arm_Dumbbell_Row', row_03: 'Superman',
+  retract_01: 'Band_Pull_Apart',
+  plank_01: 'Plank', plank_02: 'Side_Bridge',
+  deadbug_01: 'Dead_Bug', legraise_01: 'Flat_Bench_Lying_Leg_Raise',
+  mtnclimb_01: 'Mountain_Climbers', russtwist_01: 'Russian_Twist',
+  skater_01: 'Lateral_Bound', stepup_01: 'Dumbbell_Step_Ups',
+};
+
+function useFlip(period) {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const id = setInterval(() => setOn(o => !o), period);
+    return () => clearInterval(id);
+  }, [period]);
+  return on;
+}
+
+// Visual de un ejercicio: foto real (flipbook 2 fotogramas) si existe
+// una correspondencia verificada para ESE ejercicio exacto; si no, la
+// silueta animada por FK como respaldo (nunca se rompe la pantalla ni
+// se repite la foto de otro ejercicio distinto).
+function ExerciseVisual({ exId, iconKey, size = 150 }) {
+  const photoId = EXERCISE_TO_PHOTO[exId];
+  const [broken, setBroken] = useState(false);
+  const flip = useFlip(750);
+  if (!photoId || broken) return html`<${Figure} iconKey=${iconKey} size=${size} />`;
+  return html`
+    <div class="photo-wrap" style=${{ width: size, height: size }}>
+      <img src=${`${PHOTO_BASE}${photoId}/${flip ? 1 : 0}.jpg`} alt="" onError=${() => setBroken(true)} />
+    </div>
+  `;
+}
+
+function Figure({ iconKey, size = 140, phase, vivid = true }) {
+  const poseKey = ICON_TO_POSE[iconKey] || 'vacuum';
+  const t = useFigureLoop(1450, phase == null);
+  const p = phase != null ? phase : triWave(t);
+  const svg = buildFigureMarkup(poseKey, p, vivid);
+  return html`<div class="figure-wrap" style=${{ width: size, height: size * 1.25 }}>
+    <svg viewBox="0 0 120 150" style=${{ width: '100%', height: '100%' }} dangerouslySetInnerHTML=${{ __html: svg }} />
+  </div>`;
+}
+
+// Construye el SVG completo (torso + cabeza + 2 brazos + 2 piernas) por FK real,
+// con gradientes de volumen, articulaciones redondeadas, manos/pies y sombra
+// de suelo para una lectura mucho más realista del movimiento.
+function buildFigureMarkup(poseKey, phase, vivid) {
+  const cfg = FIG_POSES[poseKey] || FIG_POSES.vacuum;
+  const A = cfg.A, B = cfg.B;
+  const torso = lerp(A.torso, B.torso, phase), dy = lerp(A.dy, B.dy, phase);
+  const legL = pairL(A.legL, B.legL, phase), legR = pairL(A.legR, B.legR, phase);
+  const armL = pairL(A.armL, B.armL, phase), armR = pairL(A.armR, B.armR, phase);
+  const orient = A.orient || 0;
+  const { hipY, shY, headR, thigh, shin, uarm, farm, hipDx, shDx } = FIG;
+  const torsoLen = hipY - shY;
+  const lLeg = fkPoint(0, 0, thigh, legL[0], shin, legL[1]);
+  const rLeg = fkPoint(0, 0, thigh, legR[0], shin, legR[1]);
+  const lArm = fkPoint(0, 0, uarm, armL[0], farm, armL[1]);
+  const rArm = fkPoint(0, 0, uarm, armR[0], farm, armR[1]);
+  const bodyC = vivid ? 'url(#gBody)' : 'var(--text-dim)';
+  const armC = vivid ? 'url(#gArm)' : 'var(--text-dim)';
+  const legC = vivid ? 'url(#gLeg)' : 'var(--text-dim)';
+  const belly = poseKey === 'vacuum' ? `<ellipse cx="0" cy="${-torsoLen * 0.42}" rx="${lerp(14, 7, triWave((phase + 0.5) % 1))}" ry="9" fill="var(--bg)" opacity="0.6"/>` : '';
+  const lFootAng = legL[0] + legL[1], rFootAng = legR[0] + legR[1];
+  const defs = `
+    <defs>
+      <linearGradient id="gBody" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${COL.body}"/><stop offset="100%" stop-color="${COL.bodyDark}"/>
+      </linearGradient>
+      <linearGradient id="gArm" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="${COL.arm}"/><stop offset="100%" stop-color="${COL.armDark}"/>
+      </linearGradient>
+      <linearGradient id="gLeg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${COL.leg}"/><stop offset="100%" stop-color="${COL.legDark}"/>
+      </linearGradient>
+      <radialGradient id="gShadow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#000" stop-opacity="0.38"/><stop offset="100%" stop-color="#000" stop-opacity="0"/>
+      </radialGradient>
+    </defs>`;
+  const shadow = `<ellipse cx="60" cy="132" rx="${orient !== 0 ? 40 : 26}" ry="7" fill="url(#gShadow)"/>`;
+  return `
+    ${defs}
+    ${shadow}
+    <g transform="translate(60 ${hipY + dy}) rotate(${orient} 0 ${-dy})">
+      <line x1="${-hipDx}" y1="0" x2="${lLeg.mx}" y2="${lLeg.my}" stroke="${legC}" stroke-width="17" stroke-linecap="round"/>
+      <line x1="${lLeg.mx - hipDx}" y1="${lLeg.my}" x2="${lLeg.ex - hipDx}" y2="${lLeg.ey}" stroke="${legC}" stroke-width="13" stroke-linecap="round"/>
+      <circle cx="${lLeg.mx - hipDx * 0.5}" cy="${lLeg.my}" r="7.5" fill="${legC}"/>
+      <ellipse cx="${lLeg.ex - hipDx + 6 * Math.sin(lFootAng * Math.PI / 180)}" cy="${lLeg.ey + 4}" rx="9" ry="5" fill="${legC}" transform="rotate(${lFootAng * 0.4} ${lLeg.ex - hipDx} ${lLeg.ey})"/>
+      <line x1="${hipDx}" y1="0" x2="${rLeg.mx}" y2="${rLeg.my}" stroke="${legC}" stroke-width="17" stroke-linecap="round"/>
+      <line x1="${rLeg.mx + hipDx}" y1="${rLeg.my}" x2="${rLeg.ex + hipDx}" y2="${rLeg.ey}" stroke="${legC}" stroke-width="13" stroke-linecap="round"/>
+      <circle cx="${rLeg.mx + hipDx * 0.5}" cy="${rLeg.my}" r="7.5" fill="${legC}"/>
+      <ellipse cx="${rLeg.ex + hipDx + 6 * Math.sin(rFootAng * Math.PI / 180)}" cy="${rLeg.ey + 4}" rx="9" ry="5" fill="${legC}" transform="rotate(${rFootAng * 0.4} ${rLeg.ex + hipDx} ${rLeg.ey})"/>
+      <g transform="rotate(${torso})">
+        <rect x="-6" y="${-torsoLen - 8}" width="12" height="12" rx="5" fill="${bodyC}"/>
+        <path d="M -21,${-torsoLen + 2} Q -22,${-torsoLen - 6} -12,${-torsoLen - 9} Q 0,${-torsoLen - 12} 12,${-torsoLen - 9} Q 22,${-torsoLen - 6} 21,${-torsoLen + 2} L 14,-6 Q 15,4 8,10 L -8,10 Q -15,4 -14,-6 Z" fill="${bodyC}"/>
+        <path d="M -13,${-torsoLen + 10} Q 0,${-torsoLen + 4} 13,${-torsoLen + 10} L 13,${-torsoLen + 22} Q 0,${-torsoLen + 16} -13,${-torsoLen + 22} Z" fill="#000" opacity="0.08"/>
+        <circle cx="0" cy="${-torsoLen - headR - 10}" r="${headR}" fill="${bodyC}"/>
+        <path d="M ${-headR + 1},${-torsoLen - headR - 15} Q 0,${-torsoLen - headR - 24} ${headR - 1},${-torsoLen - headR - 15} Q ${headR - 1},${-torsoLen - headR - 20} 0,${-torsoLen - headR - 19} Q ${-headR + 1},${-torsoLen - headR - 20} ${-headR + 1},${-torsoLen - headR - 15} Z" fill="#000" opacity="0.16"/>
+        ${belly}
+        <line x1="${-shDx}" y1="${-torsoLen}" x2="${lArm.mx - shDx}" y2="${lArm.my - torsoLen}" stroke="${armC}" stroke-width="13" stroke-linecap="round"/>
+        <circle cx="${lArm.mx - shDx}" cy="${lArm.my - torsoLen}" r="6" fill="${armC}"/>
+        <line x1="${lArm.mx - shDx}" y1="${lArm.my - torsoLen}" x2="${lArm.ex - shDx}" y2="${lArm.ey - torsoLen}" stroke="${armC}" stroke-width="10.5" stroke-linecap="round"/>
+        <circle cx="${lArm.ex - shDx}" cy="${lArm.ey - torsoLen}" r="6" fill="${armC}"/>
+        <line x1="${shDx}" y1="${-torsoLen}" x2="${rArm.mx + shDx}" y2="${rArm.my - torsoLen}" stroke="${armC}" stroke-width="13" stroke-linecap="round"/>
+        <circle cx="${rArm.mx + shDx}" cy="${rArm.my - torsoLen}" r="6" fill="${armC}"/>
+        <line x1="${rArm.mx + shDx}" y1="${rArm.my - torsoLen}" x2="${rArm.ex + shDx}" y2="${rArm.ey - torsoLen}" stroke="${armC}" stroke-width="10.5" stroke-linecap="round"/>
+        <circle cx="${rArm.ex + shDx}" cy="${rArm.ey - torsoLen}" r="6" fill="${armC}"/>
+      </g>
+    </g>`;
+}
+
+// =====================================================================
+// UTILIDADES
+// =====================================================================
+function fmtTime(s) { const m = Math.floor(s / 60); const sec = s % 60; return `${m}:${sec.toString().padStart(2, '0')}`; }
+function useCountdown(initial, onComplete, running) {
+  const [remaining, setRemaining] = useState(initial);
+  const cb = useRef(onComplete); cb.current = onComplete;
+  useEffect(() => { setRemaining(initial); }, [initial]);
+  useEffect(() => {
+    if (!running) return;
+    if (remaining <= 0) { cb.current && cb.current(); return; }
+    const t = setTimeout(() => setRemaining(r => r - 1), 1000);
+    return () => clearTimeout(t);
+  }, [remaining, running]);
+  return [remaining, setRemaining];
+}
+
+const GROUP_LABELS = { inferior: 'Tren inferior', superior_empuje: 'Empuje (pecho/hombro)', superior_traccion: 'Tracción (espalda)', core: 'Core', cardio: 'Cardio / metabólico' };
+const TIME_CAPTIONS = ['1. Posición inicial', '2. Mantén la tensión', '3. Suelta controlado'];
+const REP_CAPTIONS = ['1. Posición inicial', '2. Ejecuta el movimiento', '3. Vuelve controlado'];
+
+// Tarjeta-storyboard de un ejercicio: número, nombre, reps/series, grupo
+// muscular y 3 fotogramas estáticos de la silueta (inicio → medio → fin),
+// igual que el guion visual de referencia pero con la figura propia.
+function TodayExerciseCard({ ex, num }) {
+  const hasPhoto = !!EXERCISE_TO_PHOTO[ex.id];
+  const captions = ex.isTimeBased ? TIME_CAPTIONS : REP_CAPTIONS;
+  const frames = [0, 0.5, 1];
+  return html`
+    <div class="today-card">
+      <span class="today-card-num">${num}</span>
+      <div class="today-card-body">
+        <p class="today-card-name">${ex.name}</p>
+        <p class="today-card-meta">${ex.isTimeBased ? `${ex.targetReps}s` : `${ex.targetReps} reps`} · ${ex.targetSeries}${ex.equip === 'mancuernas' ? ` · ${ex.weight}kg` : ''}</p>
+        <p class="today-card-group">${GROUP_LABELS[ex.group] || ex.group}</p>
+        ${hasPhoto ? html`
+          <${ExerciseVisual} exId=${ex.id} iconKey=${ex.icon} size=${240} />
+        ` : html`
+          <div class="today-card-frames">
+            ${frames.map((f, i) => html`
+              <${React.Fragment} key=${i}>
+                <div class="today-frame">
+                  <${Figure} iconKey=${ex.icon} size=${104} phase=${f} vivid=${true} />
+                  <p class="today-frame-cap">${captions[i]}</p>
+                </div>
+                ${i < frames.length - 1 ? html`<span class="today-frame-arrow">→</span>` : null}
+              </${React.Fragment}>
+            `)}
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+function TodayExerciseCards({ exercises }) {
+  return html`
+    <div>
+      <p class="today-cards-title">Ejercicios de hoy, paso a paso</p>
+      ${exercises.map((ex, i) => html`<${TodayExerciseCard} key=${ex.id} ex=${ex} num=${i + 1} />`)}
+    </div>
+  `;
+}
+
+// =====================================================================
+// PANTALLA: HOME
+// =====================================================================
+function Home({ state, onStart, onOpenProgress, onOpenSettings, onOpenWeekPlan, todaySession, onSetRounds }) {
+  const phase = PHASES[state.cycleWeek];
+  const sessionsInWeek = state.totalSessionsDone % 6;
+  const jsDay = new Date().getDay();
+  const isoDay = jsDay === 0 ? 7 : jsDay;
+  const isRestDay = isoDay === REST_DAY;
+
+  return html`
+    <div class="screen home">
+      <header class="home-header">
+        <div>
+          <p class="eyebrow">${DAY_NAMES[isoDay]} · Semana ${state.cycleWeek} del plan mensual</p>
+          <h1>${phase.name}</h1>
+        </div>
+        <button class="icon-btn" onClick=${onOpenSettings} aria-label="Configuración">⚙</button>
+      </header>
+
+      <div class="phase-card" style=${{ '--phase-color': phase.color }}>
+        <p class="phase-name">${phase.name}</p>
+        <p class="phase-desc">${phase.desc}</p>
+        <div class="phase-progress">
+          ${[0, 1, 2, 3, 4, 5].map(i => html`<span key=${i} class=${`dot ${i < sessionsInWeek ? 'filled' : ''}`} />`)}
+        </div>
+        <p class="phase-progress-label">${sessionsInWeek}/6 sesiones esta semana del ciclo</p>
+      </div>
+
+      <div class="cycle-track">
+        ${[1, 2, 3, 4].map(w => html`
+          <div key=${w} class=${`cycle-step ${w === state.cycleWeek ? 'active' : ''} ${w < state.cycleWeek ? 'done' : ''}`}>
+            <span class="cycle-num">${w}</span>
+            <span class="cycle-label">${PHASES[w].name}</span>
+          </div>
+        `)}
+      </div>
+
+      ${isRestDay ? html`
+        <div class="rest-day-card">
+          <p class="rest-day-title">Hoy toca descanso</p>
+          <p class="cue-text">Domingo: sin sesión de fuerza. El bloque hipopresivo (4-5 min) se puede hacer igualmente si quieres mantener el trabajo de faja abdominal.</p>
+        </div>
+      ` : html`
+        <div class="rounds-block">
+          <p class="rounds-label">¿Cuántas vueltas al circuito hoy?</p>
+          <div class="rounds-picker">
+            ${[1, 2, 3].map(n => html`
+              <button key=${n} class=${`round-btn ${state.roundsPerDay === n ? 'active' : ''}`} onClick=${() => onSetRounds(n)}>
+                <span class="rn">${n}</span><span class="rl">${n === 1 ? 'vuelta' : 'vueltas'}</span>
+              </button>
+            `)}
+          </div>
+          <p class="rounds-hint">Cada vuelta repite los ${todaySession.exercises.length} ejercicios de hoy en el mismo orden. Cada vuelta se registra por separado para calcular tu progresión.</p>
+          <p class="time-estimate">⏱ Tiempo total de hoy: <strong>~${fmtMinutes(estimateDaySeconds(todaySession, state.roundsPerDay, state.pace || 'normal'))} min</strong> (${state.roundsPerDay} ${state.roundsPerDay === 1 ? 'vuelta' : 'vueltas'} + bloque hipopresivo)</p>
+        </div>
+
+        <div class="today-preview">
+          <p class="today-title">Hoy: ${todaySession.templateName} · ${state.roundsPerDay} ${state.roundsPerDay === 1 ? 'vuelta' : 'vueltas'}</p>
+          <div class="today-list">
+            ${todaySession.exercises.map(ex => html`
+              <div key=${ex.id} class="today-row">
+                <span class="today-ex-name">${ex.name}</span>
+                <span class="today-ex-detail">
+                  ${ex.isTimeBased ? `${ex.targetReps}s` : `${ex.targetReps} reps`}${ex.equip === 'mancuernas' ? ` · ${ex.weight}kg` : ''} × ${state.roundsPerDay}
+                </span>
+              </div>
+            `)}
+          </div>
+          <button class="btn-primary btn-huge" onClick=${onStart}>Empezar circuito de hoy</button>
+        </div>
+
+        <${TodayExerciseCards} exercises=${todaySession.exercises} />
+      `}
+
+      <div class="stat-row">
+        <div class="stat-box"><p class="stat-num">${state.totalSessionsDone}</p><p class="stat-label">Sesiones totales</p></div>
+        <div class="stat-box"><p class="stat-num">${Object.keys(state.exerciseLevels).length}</p><p class="stat-label">Ejercicios calibrados</p></div>
+      </div>
+
+      <button class="link-btn" onClick=${onOpenWeekPlan}>Ver plan semanal completo →</button>
+      <button class="link-btn" onClick=${onOpenProgress}>Ver progreso completo →</button>
+    </div>
+  `;
+}
+
+// =====================================================================
+// PANTALLA: PLAN SEMANAL
+// =====================================================================
+function WeeklyPlan({ state, onBack }) {
+  const plan = getWeeklyPlan(state);
+  const jsDay = new Date().getDay();
+  const todayIso = jsDay === 0 ? 7 : jsDay;
+  return html`
+    <div class="screen weekplan">
+      <header class="sub-header">
+        <button class="icon-btn" onClick=${onBack}>←</button>
+        <h1>Plan semanal</h1>
+      </header>
+      <p class="cue-text weekplan-intro">
+        6 días de entreno + 1 día de descanso (domingo). Cada día es un circuito de ${EXERCISES_PER_SESSION} ejercicios que repites ${state.roundsPerDay} ${state.roundsPerDay === 1 ? 'vez' : 'veces'} (ajustable cada día en Inicio). Series y repeticiones se recalculan según tu fase del mes (${PHASES[state.cycleWeek].name}).
+      </p>
+      ${plan.map(day => html`
+        <div key=${day.day} class=${`weekplan-day ${day.day === todayIso ? 'is-today' : ''}`}>
+          <div class="weekplan-day-header">
+            <span class="weekplan-day-name">${DAY_NAMES[day.day]}</span>
+            <span class="weekplan-day-focus">${day.name}</span>
+            ${day.day === todayIso ? html`<span class="weekplan-today-badge">Hoy</span>` : null}
+          </div>
+          ${day.exercises.map(ex => html`
+            <div key=${ex.id} class="weekplan-ex-row">
+              <span class="weekplan-ex-name">${ex.name}</span>
+              <span class="weekplan-ex-detail">
+                ${ex.isTimeBased ? `${ex.targetReps}s` : `${ex.targetReps} reps`}${ex.equip === 'mancuernas' ? ` · ${ex.weight}kg` : ' · peso corporal'}
+              </span>
+            </div>
+          `)}
+        </div>
+      `)}
+      <div class="weekplan-day rest-summary">
+        <div class="weekplan-day-header">
+          <span class="weekplan-day-name">Domingo</span>
+          <span class="weekplan-day-focus">Descanso · hipopresivos opcionales</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// =====================================================================
+// PANTALLA: CIRCUITO (rondas de 5 ejercicios, con descanso entre rondas)
+// =====================================================================
+// Flujo 100% automático: trabajo (temporizado según objetivo+tempo) → confirmación
+// de reps de 5s (ajustable con ±, si no se toca nada se autorregistra el objetivo)
+// → descanso → siguiente ejercicio/vuelta, todo encadenado sin necesidad de tocar
+// la pantalla. El botón de pausa es la única acción que corta la cadena.
+const CONFIRM_SECONDS = 10;
+
+function TrainingSession({ session, state, rounds, onFinishCircuit, onExit }) {
+  const [roundIdx, setRoundIdx] = useState(0);
+  const [exIdx, setExIdx] = useState(0);
+  const [phase, setPhase] = useState('work'); // work | confirm | rest | roundrest
+  const [setsLog, setSetsLog] = useState({});
+  const [confirmReps, setConfirmReps] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  const ex = session.exercises[exIdx];
+  const isLastExInRound = exIdx === session.exercises.length - 1;
+  const isLastRound = roundIdx === rounds - 1;
+  const pace = state.pace || 'normal';
+
+  function finalizeCircuit() {
+    playIfOn(Sound.playSessionComplete);
+    const results = [];
+    session.exercises.forEach(e => {
+      const doneSets = setsLog[e.id] || [];
+      if (doneSets.length) results.push({ exercise: e, ...applyResult(state, e, doneSets, session.phaseKey) });
+    });
+    completeSession(state, rounds);
+    onFinishCircuit(results);
+  }
+
+  function commitSet(finalReps) {
+    playIfOn(Sound.playAutoLogged);
+    const rpe = estimateRpe(finalReps, ex.targetReps, session.phaseKey);
+    setSetsLog(prev => ({ ...prev, [ex.id]: [...(prev[ex.id] || []), { reps: finalReps, rpe }] }));
+    setPhase('rest');
+  }
+
+  // --- Temporizador de TRABAJO (auto): cuenta el tiempo estimado de la serie ---
+  const workSeconds = computeWorkSeconds(ex, pace);
+  const [workRemaining, setWorkRemaining] = useCountdown(workSeconds, () => {
+    setConfirmReps(ex.targetReps);
+    setPhase('confirm');
+  }, phase === 'work' && !paused);
+  useEffect(() => { if (phase === 'work') { setWorkRemaining(workSeconds); playIfOn(Sound.playWorkStart); } }, [phase, roundIdx, exIdx]);
+
+  // --- Confirmación de reps (auto a los 5s, ajustable con ± mientras tanto) ---
+  const [confirmRemaining, setConfirmRemaining] = useCountdown(CONFIRM_SECONDS, () => { commitSet(confirmReps); }, phase === 'confirm' && !paused);
+  useEffect(() => { if (phase === 'confirm') { setConfirmRemaining(CONFIRM_SECONDS); playIfOn(Sound.playConfirmOpen); } }, [phase, roundIdx, exIdx]);
+
+  // --- Descansos (entre series/ejercicios y entre vueltas) ---
+  const restDuration = phase === 'roundrest' ? Math.round(ex.restSec * 1.8) : ex.restSec;
+  const [restRemaining, setRestRemaining] = useCountdown(restDuration, () => {
+    if (phase === 'roundrest') {
+      playIfOn(Sound.playRestEnd);
+      setRoundIdx(r => r + 1); setExIdx(0); setPhase('work');
+      return;
+    }
+    playIfOn(Sound.playRestEnd);
+    if (isLastExInRound) {
+      if (isLastRound) finalizeCircuit();
+      else { playIfOn(Sound.playRoundEnd); setPhase('roundrest'); }
+    } else {
+      setExIdx(i => i + 1); setPhase('work');
+    }
+  }, (phase === 'rest' || phase === 'roundrest') && !paused);
+
+  const lastBeepedRef = useRef(null);
+  useEffect(() => {
+    if (phase !== 'rest' && phase !== 'roundrest') return;
+    if (restRemaining <= 3 && restRemaining > 0 && lastBeepedRef.current !== restRemaining) {
+      lastBeepedRef.current = restRemaining;
+      playIfOn(() => Sound.playCountdownBeep(restRemaining === 1));
+    }
+  }, [phase, restRemaining]);
+
+  const PauseBtn = html`
+    <div class="session-controls">
+      <button class="end-btn" onClick=${() => { if (confirm('¿Volver al inicio ahora? Se perderá el progreso de esta vuelta sin registrar.')) onExit(); }} aria-label="Volver al inicio">←</button>
+      <button class=${`pause-btn ${paused ? 'active' : ''}`} onClick=${() => setPaused(p => !p)} aria-label="Pausar">${paused ? '▶' : '❚❚'}</button>
+    </div>
+  `;
+
+  if (phase === 'roundrest') {
+    return html`
+      <div class="screen roundrest">
+        ${PauseBtn}
+        <span class="roundrest-badge">Fin de vuelta ${roundIdx + 1}/${rounds}</span>
+        <p class="timer-big">${fmtTime(restRemaining)}</p>
+        <p class="cue-text">Descanso entre vueltas del circuito. La vuelta ${roundIdx + 2} empieza sola cuando acaba la cuenta.</p>
+        <button class="btn-secondary" onClick=${() => setRestRemaining(0)}>Saltar descanso</button>
+      </div>
+    `;
+  }
+
+  if (phase === 'rest') {
+    const nextIsRoundEnd = isLastExInRound;
+    const nextName = nextIsRoundEnd ? (isLastRound ? 'Fin del circuito' : `Descanso entre vueltas`) : session.exercises[exIdx + 1].name;
+    return html`
+      <div class="screen rest">
+        ${PauseBtn}
+        <p class="eyebrow">Descanso · Vuelta ${roundIdx + 1}/${rounds}</p>
+        <p class="timer-big rest-timer">${fmtTime(restRemaining)}</p>
+        <p class="rest-next">Siguiente: ${nextName}</p>
+        ${!nextIsRoundEnd ? html`
+          <p class="rest-next-detail">
+            ${session.exercises[exIdx + 1].isTimeBased ? `${session.exercises[exIdx + 1].targetReps}s` : `${session.exercises[exIdx + 1].targetReps} reps`}${session.exercises[exIdx + 1].equip === 'mancuernas' ? ` · mancuernas ${session.exercises[exIdx + 1].weight}kg` : ''}
+          </p>
+        ` : null}
+        <button class="btn-secondary" onClick=${() => setRestRemaining(0)}>Saltar descanso</button>
+      </div>
+    `;
+  }
+
+  if (phase === 'confirm') {
+    const pct = ((CONFIRM_SECONDS - confirmRemaining) / CONFIRM_SECONDS) * 100;
+    return html`
+      <div class="screen logging">
+        ${PauseBtn}
+        <p class="eyebrow">${ex.name} · Vuelta ${roundIdx + 1}/${rounds}</p>
+        <h2>${ex.isTimeBased ? '¿Cuántos segundos aguantaste?' : '¿Cuántas repeticiones hiciste?'}</h2>
+        <div class="confirm-ring">
+          <svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="35" class="confirm-ring-bg"/><circle cx="40" cy="40" r="35" class="confirm-ring-fg" style=${{ strokeDashoffset: 219.9 - (219.9 * pct) / 100 }}/></svg>
+          <div class="confirm-ring-num">${confirmRemaining}s</div>
+        </div>
+        <div class="confirm-reps-row">
+          <button class="confirm-adj-btn" onClick=${() => { playIfOn(Sound.playAdjustTick); setConfirmReps(r => Math.max(0, r - 1)); }}>−</button>
+          <span class="confirm-reps-num">${confirmReps}</span>
+          <button class="confirm-adj-btn" onClick=${() => { playIfOn(Sound.playAdjustTick); setConfirmReps(r => r + 1); }}>+</button>
+        </div>
+        <p class="target-hint">Objetivo propuesto: ${ex.targetReps} ${ex.isTimeBased ? 's' : 'reps'}. Se registra sola en ${confirmRemaining}s si no tocas nada.</p>
+      </div>
+    `;
+  }
+
+  const workPct = ((workSeconds - workRemaining) / workSeconds) * 100;
+  return html`
+    <div class="screen work">
+      ${PauseBtn}
+      <span class="round-badge">Vuelta ${roundIdx + 1} de ${rounds}</span>
+      <p class="eyebrow">${session.templateName} · Ejercicio ${exIdx + 1}/${session.exercises.length}</p>
+      <div class="circuit-progress">
+        ${session.exercises.map((e, i) => html`<span key=${e.id} class=${`circuit-dot ${i < exIdx ? 'done' : i === exIdx ? 'current' : ''}`} />`)}
+      </div>
+      <${ExerciseVisual} exId=${ex.id} iconKey=${ex.icon} size=${170} />
+      <h2>${ex.name}</h2>
+      <div class="target-chips">
+        <span class="chip chip-emphasis">${ex.isTimeBased ? `${ex.targetReps}s` : `${ex.targetReps} reps`}</span>
+        <span class="chip">${ex.equip === 'mancuernas' ? `Mancuernas ${ex.weight}kg` : 'Peso corporal'}</span>
+        <span class="chip">Tempo ${ex.tempo}</span>
+      </div>
+      <p class="exercise-cue">${ex.cue}</p>
+      <p class="timer-big">${fmtTime(workRemaining)}</p>
+      <button class="btn-secondary" onClick=${() => { setConfirmReps(ex.targetReps); setPhase('confirm'); }}>Ya la hice, continuar</button>
+      ${roundIdx === 0 ? html`<p class="level-hint">Nivel actual: ${getExerciseLevel(state, ex.id, ex.level)}/5</p>` : null}
+      <p class="auto-note">Avanza sola: ${fmtTime(workRemaining)} restantes de esta serie.</p>
+    </div>
+  `;
+}
+
+// =====================================================================
+// PANTALLA: HIPOPRESIVOS (bloque final, no calentamiento)
+// =====================================================================
+function HypopressiveBlock({ onDone, onExit }) {
+  const [idx, setIdx] = useState(0);
+  const [running, setRunning] = useState(true);
+  const step = HYPOPRESSIVE_BLOCK[idx];
+  const advance = useCallback(() => {
+    playIfOn(Sound.playRestEnd);
+    if (idx < HYPOPRESSIVE_BLOCK.length - 1) setIdx(i => i + 1); else onDone();
+  }, [idx, onDone]);
+  const [remaining, setRemaining] = useCountdown(step.duration, advance, running);
+  useEffect(() => { setRemaining(step.duration); }, [idx]);
+  useEffect(() => { playIfOn(Sound.playHypoStep); }, [idx]);
+  const pct = ((step.duration - remaining) / step.duration) * 100;
+
+  return html`
+    <div class="screen hypo">
+      <div class="session-controls">
+        <button class="end-btn" onClick=${() => { if (confirm('¿Volver al inicio ahora? Se perderá el registro de esta vuelta.')) onExit(); }} aria-label="Volver al inicio">←</button>
+      </div>
+      <p class="eyebrow">Bloque final · Hipopresivos · Paso ${idx + 1}/${HYPOPRESSIVE_BLOCK.length}</p>
+      <div class="mobility-ring">
+        <svg viewBox="0 0 120 120" class="ring-svg">
+          <circle cx="60" cy="60" r="54" class="ring-bg" />
+          <circle cx="60" cy="60" r="54" class="ring-fg" style=${{ strokeDashoffset: 339.3 - (339.3 * pct) / 100 }} />
+        </svg>
+        <div class="ring-center"><${ExerciseVisual} exId=${step.id} iconKey=${step.icon} size=${120} /></div>
+      </div>
+      <h2>${step.name}</h2>
+      <p class="cue-text">${step.cue}</p>
+      <p class="timer-big">${fmtTime(remaining)}</p>
+      <div class="mobility-controls">
+        <button class="btn-secondary" onClick=${() => setRunning(r => !r)}>${running ? 'Pausar' : 'Reanudar'}</button>
+        <button class="btn-primary" onClick=${advance}>${idx < HYPOPRESSIVE_BLOCK.length - 1 ? 'Saltar paso' : 'Finalizar'}</button>
+      </div>
+      <div class="mobility-dots">
+        ${HYPOPRESSIVE_BLOCK.map((s, i) => html`<span key=${s.id} class=${`mdot ${i === idx ? 'active' : ''} ${i < idx ? 'done' : ''}`} />`)}
+      </div>
+    </div>
+  `;
+}
+
+// =====================================================================
+// PANTALLA: RESUMEN POST-SESIÓN
+// =====================================================================
+function SessionSummary({ results, rounds, onDone }) {
+  const progressed = results.filter(r => r.progressed);
+  const regressed = results.filter(r => r.regressed);
+  return html`
+    <div class="screen summary">
+      <p class="eyebrow">Circuito completado · ${rounds} ${rounds === 1 ? 'vuelta' : 'vueltas'}</p>
+      <h1>Buen trabajo 💪</h1>
+      ${progressed.length > 0 ? html`
+        <div class="summary-block up">
+          <p class="summary-title">Subiste de nivel</p>
+          ${progressed.map(r => html`<div key=${r.exercise.id} class="summary-row"><span>${r.exercise.name}</span><span class="badge badge-up">Nv. ${r.levelBefore} → ${r.levelAfter}</span></div>`)}
+        </div>
+      ` : null}
+      ${regressed.length > 0 ? html`
+        <div class="summary-block down">
+          <p class="summary-title">Ajustamos la dificultad</p>
+          ${regressed.map(r => html`<div key=${r.exercise.id} class="summary-row"><span>${r.exercise.name}</span><span class="badge badge-down">Nv. ${r.levelBefore} → ${r.levelAfter}</span></div>`)}
+        </div>
+      ` : null}
+      ${(progressed.length === 0 && regressed.length === 0) ? html`<p class="cue-text">Mantienes el nivel actual en todos los ejercicios. La próxima sesión sube ligeramente el volumen.</p>` : null}
+      <button class="btn-primary btn-huge" onClick=${onDone}>Volver al inicio</button>
+    </div>
+  `;
+}
+
+// =====================================================================
+// PANTALLA: PROGRESO
+// =====================================================================
+function Progress({ state, onBack }) {
+  const groups = [...new Set(EXERCISES.map(e => e.group))];
+  const groupLabels = { inferior: 'Tren inferior', superior_empuje: 'Empuje (pecho/hombro/tríceps)', superior_traccion: 'Tracción (espalda)', core: 'Core', cardio: 'Cardio / metabólico' };
+  const recentSessions = [...(state.sessionLog || [])].reverse().slice(0, 10);
+  return html`
+    <div class="screen progress">
+      <header class="sub-header"><button class="icon-btn" onClick=${onBack}>←</button><h1>Tu progreso</h1></header>
+      <div class="stat-row">
+        <div class="stat-box"><p class="stat-num">${state.totalSessionsDone}</p><p class="stat-label">Sesiones</p></div>
+        <div class="stat-box"><p class="stat-num">${state.history.length}</p><p class="stat-label">Ejercicios registrados</p></div>
+        <div class="stat-box"><p class="stat-num">${Object.values(state.exerciseLevels).filter(v => v.level >= 4).length}</p><p class="stat-label">En nivel avanzado+</p></div>
+      </div>
+      ${groups.map(g => {
+        const familyPrefixes = [...new Set(EXERCISES.filter(e => e.group === g).map(e => e.id.split('_')[0]))];
+        return html`
+          <div key=${g} class="progress-group">
+            <p class="group-title">${groupLabels[g]}</p>
+            ${familyPrefixes.map(prefix => {
+              const family = EXERCISES.filter(e => e.id.split('_')[0] === prefix).sort((a, b) => a.level - b.level);
+              let level = getFamilyLevel(state, prefix);
+              const current = family.find(e => e.level === level) || family[0];
+              return html`
+                <div key=${prefix} class="level-track-row">
+                  <span class="level-track-name">${current.name}</span>
+                  <div class="level-track">${[1, 2, 3, 4, 5].map(l => html`<span key=${l} class=${`level-pip ${l <= level ? 'filled' : ''}`} />`)}</div>
+                </div>
+              `;
+            })}
+          </div>
+        `;
+      })}
+      ${recentSessions.length > 0 ? html`
+        <div class="progress-group">
+          <p class="group-title">Últimas sesiones</p>
+          <div class="history-list">
+            ${recentSessions.map((s, i) => html`
+              <div key=${i} class="history-row">
+                <span class="history-date">${new Date(s.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</span>
+                <span>${s.rounds} ${s.rounds === 1 ? 'vuelta' : 'vueltas'} · Fase ${PHASES[s.phase].name}</span>
+              </div>
+            `)}
+          </div>
+        </div>
+      ` : null}
+    </div>
+  `;
+}
+
+// =====================================================================
+// PANTALLA: CONFIGURACIÓN
+// =====================================================================
+function SyncBlock({ state, forceRender }) {
+  const [code, setCode] = useState('');
+  const [status, setStatus] = useState(null); // null | 'loading' | 'ok' | 'error'
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => { if (!state.syncCode) syncCreate(state).then(() => forceRender(x => x + 1)); }, []);
+
+  async function handleLink() {
+    if (!code.trim()) return;
+    setStatus('loading');
+    try {
+      syncing = true;
+      await syncPull(code);
+      syncing = false;
+      setStatus('ok');
+      setTimeout(() => window.location.reload(), 900);
+    } catch (e) {
+      syncing = false;
+      setStatus('error');
+    }
+  }
+
+  function handleCopy() {
+    if (!state.syncCode) return;
+    navigator.clipboard?.writeText(state.syncCode).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); });
+  }
+
+  return html`
+    <div class="settings-block">
+      <p class="settings-label">Sincronizar entre dispositivos</p>
+      <p class="settings-hint">Tu código en este dispositivo (guarda y actualiza tu progreso automáticamente):</p>
+      <div class="sync-code-row">
+        <span class="sync-code">${state.syncCode || 'generando…'}</span>
+        <button class="btn-secondary sync-copy-btn" onClick=${handleCopy} disabled=${!state.syncCode}>${copied ? '✓ Copiado' : 'Copiar'}</button>
+      </div>
+      <p class="settings-hint" style=${{ marginTop: '14px' }}>¿Ya tienes progreso en otro dispositivo? Introduce aquí ese código para traerlo a este:</p>
+      <div class="sync-link-row">
+        <input class="sync-code-input" placeholder="Pega el código aquí" value=${code} onChange=${e => setCode(e.target.value)} />
+        <button class="btn-secondary" onClick=${handleLink} disabled=${status === 'loading'}>${status === 'loading' ? '...' : 'Vincular'}</button>
+      </div>
+      ${status === 'ok' ? html`<p class="sync-msg sync-ok">Progreso vinculado. Recargando…</p>` : null}
+      ${status === 'error' ? html`<p class="sync-msg sync-err">Código no encontrado o sin conexión. Revisa que esté bien copiado.</p>` : null}
+    </div>
+  `;
+}
+
+function Settings({ state, onBack, onReset, soundsEnabled, onToggleSounds }) {
+  const [, forceRender] = useState(0);
+  return html`
+    <div class="screen settings">
+      <header class="sub-header"><button class="icon-btn" onClick=${onBack}>←</button><h1>Configuración</h1></header>
+
+      <div class="settings-block">
+        <div class="settings-toggle-row">
+          <p class="settings-label">Sonidos (series y descansos)</p>
+          <button class=${`switch ${soundsEnabled ? 'on' : ''}`} onClick=${() => { onToggleSounds(); forceRender(x => x + 1); }}><span class="switch-knob" /></button>
+        </div>
+        <p class="settings-hint">Beep de inicio/fin de serie y cuenta atrás en los últimos 3 segundos del descanso. En iPhone, si el interruptor físico de silencio está activado, iOS silencia el sonido de cualquier web o app instalada — es una restricción del sistema, no de esta app.</p>
+      </div>
+
+      <div class="settings-block">
+        <p class="settings-label">Semana del ciclo</p>
+        <div class="week-picker">
+          ${[1, 2, 3, 4].map(w => html`<button key=${w} class=${`week-btn ${state.cycleWeek === w ? 'active' : ''}`} onClick=${() => { state.cycleWeek = w; saveState(state); forceRender(x => x + 1); }}>${w}</button>`)}
+        </div>
+        <p class="settings-hint">Fuerza manualmente la fase de periodización si lo necesitas.</p>
+      </div>
+
+      <div class="settings-block">
+        <p class="settings-label">Ritmo del circuito</p>
+        <div class="pace-picker">
+          ${[['lento', 'Lento'], ['normal', 'Normal'], ['rapido', 'Rápido']].map(([key, label]) => html`
+            <button key=${key} class=${`pace-btn ${(state.pace || 'normal') === key ? 'active' : ''}`} onClick=${() => { state.pace = key; saveState(state); forceRender(x => x + 1); }}>${label}</button>
+          `)}
+        </div>
+        <p class="settings-hint">Ajusta cuánto dura automáticamente cada serie antes de pasar a confirmar repeticiones. No afecta a los ejercicios isométricos (plancha, silla), que respetan siempre su tiempo objetivo real.</p>
+      </div>
+
+      <${SyncBlock} state=${state} forceRender=${forceRender} />
+
+      <div class="settings-block">
+        <p class="settings-label">Datos</p>
+        <button class="btn-danger" onClick=${onReset}>Reiniciar todo el progreso</button>
+        <p class="settings-hint">Borra niveles, historial y vuelve a Semana 1 (también en el código de sincronización).</p>
+      </div>
+
+      <div class="settings-block">
+        <p class="settings-label">Acerca de</p>
+        <p class="settings-hint">
+          Plan mensual de 6 días/semana (domingo descanso), sin fase de adaptación inicial (perfil avanzado): Volumen → Fuerza → Intensidad → Descarga.
+          Cada día es un circuito de ${EXERCISES_PER_SESSION} ejercicios que puedes repetir 1, 2 o 3 vueltas — cada vuelta se registra por separado. La fase "Volumen" (semana 1) ya trabaja al 100% de la carga base: no hay rampa de adaptación, se empieza fuerte desde el día 1. Con 3 vueltas + el bloque hipopresivo, el total diario ronda los 25-30 minutos (lo ves en Inicio, se recalcula según tus vueltas y ritmo elegidos).
+          Bloque hipopresivo al final de cada sesión (no al principio) para faja abdominal y reducción de cintura.
+          El circuito avanza solo: cada serie se cronometra según tus reps objetivo y el tempo del ejercicio, y al acabar tienes 10 segundos para ajustar con ± las repeticiones reales antes de que se registren automáticamente. El esfuerzo (RPE) se estima solo, comparando lo hecho con el objetivo — no hay que tocar una escala manual. Puedes pausar o terminar en cualquier momento con los botones superiores.
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+// =====================================================================
+// APP ROOT
+// =====================================================================
+function App() {
+  const [state, setState] = useState(() => loadState());
+  const [screen, setScreen] = useState('home'); // home | weekplan | session | hypo | summary | progress | settings
+  const [activeSession, setActiveSession] = useState(null);
+  const [activeRounds, setActiveRounds] = useState(2);
+  const [lastResults, setLastResults] = useState([]);
+  const [, forceRender] = useState(0);
+  const todaySession = useMemo(() => generateSession(state), [state.cycleWeek, state.totalSessionsDone]);
+
+  useEffect(() => { if (!state.syncCode) syncCreate(state).then(() => forceRender(x => x + 1)); }, []);
+
+  function handleStart() {
+    Sound.unlock();
+    setActiveSession(generateSession(state));
+    setActiveRounds(state.roundsPerDay || 2);
+    setScreen('session');
+  }
+  function handleSetRounds(n) { state.roundsPerDay = n; saveState(state); forceRender(x => x + 1); }
+  function handleCircuitFinish(results) { setLastResults(results); setScreen('hypo'); }
+  function handleHypoDone() { setState({ ...state }); setScreen('summary'); }
+  function handleReset() {
+    if (!confirm('Esto borrará todo tu progreso. ¿Continuar?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    setState(loadState());
+    setScreen('home');
+  }
+  function handleToggleSounds() { soundsOn = !soundsOn; forceRender(x => x + 1); }
+
+  return html`
+    <div class="app-shell">
+      ${screen === 'home' ? html`<${Home} state=${state} onStart=${handleStart} onOpenProgress=${() => setScreen('progress')} onOpenSettings=${() => setScreen('settings')} onOpenWeekPlan=${() => setScreen('weekplan')} todaySession=${todaySession} onSetRounds=${handleSetRounds} />` : null}
+      ${screen === 'weekplan' ? html`<${WeeklyPlan} state=${state} onBack=${() => setScreen('home')} />` : null}
+      ${screen === 'session' && activeSession ? html`<${TrainingSession} session=${activeSession} state=${state} rounds=${activeRounds} onFinishCircuit=${handleCircuitFinish} onExit=${() => setScreen('home')} />` : null}
+      ${screen === 'hypo' ? html`<${HypopressiveBlock} onDone=${handleHypoDone} onExit=${() => setScreen('home')} />` : null}
+      ${screen === 'summary' ? html`<${SessionSummary} results=${lastResults} rounds=${activeRounds} onDone=${() => setScreen('home')} />` : null}
+      ${screen === 'progress' ? html`<${Progress} state=${state} onBack=${() => setScreen('home')} />` : null}
+      ${screen === 'settings' ? html`<${Settings} state=${state} onBack=${() => setScreen('home')} onReset=${handleReset} soundsEnabled=${soundsOn} onToggleSounds=${handleToggleSounds} />` : null}
+    </div>
+  `;
+}
+
+// =====================================================================
+// PWA: manifest + icono generados dinámicamente
+// =====================================================================
+(function setupPWA() {
+  const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="40" fill="#12141A"/><text x="100" y="130" font-family="Arial Black, sans-serif" font-weight="900" font-size="110" fill="#C8FF3D" text-anchor="middle">F</text></svg>`;
+  const iconUrl = 'data:image/svg+xml,' + encodeURIComponent(svgIcon);
+  document.getElementById('favicon').href = iconUrl;
+  document.getElementById('apple-touch-icon').href = iconUrl;
+  const manifest = {
+    name: 'Forma 55 — Circuito diario',
+    short_name: 'Forma 55',
+    start_url: './',
+    display: 'standalone',
+    background_color: '#12141A',
+    theme_color: '#12141A',
+    icons: [{ src: iconUrl, sizes: '200x200', type: 'image/svg+xml' }],
+  };
+  document.getElementById('manifest-link').href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(manifest));
+})();
+
+const root = createRoot(document.getElementById('root'));
+root.render(h(App));
+</script>
+</body>
+</html>
