@@ -2385,7 +2385,7 @@ function LocalMusicBlock() {
 
   return html`
     <div class="local-music">
-      <input ref=${inputRef} type="file" accept="audio/*" multiple style=${{ display: 'none' }} onChange=${handleFiles} />
+      <input ref=${inputRef} type="file" multiple style=${{ display: 'none' }} onChange=${handleFiles} />
       <button class="btn-secondary" onClick=${() => inputRef.current && inputRef.current.click()}>
         ${fileNames.length ? `Cambiar selección (${fileNames.length} canciones)` : 'Elegir canciones de tu dispositivo'}
       </button>
